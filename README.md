@@ -23,7 +23,7 @@ rustup update
 Clone the repo and run the app:
 ```
 git clone https://github.com/DavFeng1/PostgresTermUI.git
-cd PostgresTermUI
+cd postgres-tui
 cargo run
 ```
 
