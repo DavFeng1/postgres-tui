@@ -1,3 +1,5 @@
+use crate::app::App;
+
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout},
@@ -6,7 +8,7 @@ use tui::{
     Frame,
 };
 
-pub fn app_layout<B: Backend>(f: &mut Frame<B>) {
+pub fn draw<B: Backend>(f: &mut Frame<B>, _app: &mut App) {
 
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -36,6 +38,8 @@ pub fn app_layout<B: Backend>(f: &mut Frame<B>) {
         .style(default_style);
 
     f.render_widget(block, chunks[1]);
+
+
 }
 
 
