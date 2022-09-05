@@ -2,7 +2,7 @@ use crate::app::App;
 use crate::ui::draw;
 
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
+    event::{DisableMouseCapture, EnableMouseCapture},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -53,11 +53,10 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
     loop {
         terminal.draw(|f| draw(f, &mut app))?;
 
-        if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Char(c) => app.on_key(c),
-                _ => {}
-            }
+        let register_keybinds_succeeded = app.register_keybinds();
+
+        if register_keybinds_succeeded.is_err() {
+            app.should_quit = true;
         }
 
         if app.should_quit {

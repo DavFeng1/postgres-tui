@@ -1,30 +1,20 @@
-use tui::widgets::ListState;
+use crossterm::event::{self, KeyCode, Event};
+use std::io;
 
-const TASKS: [&str; 24] = [
-    "Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Item8", "Item9", "Item10",
-    "Item11", "Item12", "Item13", "Item14", "Item15", "Item16", "Item17", "Item18", "Item19",
-    "Item20", "Item21", "Item22", "Item23", "Item24",
-];
-
-pub struct StatefulList<T> {
-    pub state: ListState,
-    pub items: Vec<T>,
+#[derive(Debug)]
+pub enum InputMode {
+    Normal,
+    Editing,
 }
 
-impl<T> StatefulList<T> {
-    pub fn with_items(items: Vec<T>) -> StatefulList<T> {
-        StatefulList {
-            state: ListState::default(),
-            items,
-        }
-    }
-}
 
 pub struct App<'a> {
     pub title: &'a str,
-    pub tasks: StatefulList<&'a str>,
     pub show_popup: bool,
     pub should_quit: bool,
+    pub input: String,
+    pub input_mode: InputMode,
+    input_history: Vec<String>,
 }
 
 
@@ -34,19 +24,47 @@ impl<'a> App<'a> {
             title,
             should_quit: false,
             show_popup: true,
-            tasks: StatefulList::with_items(TASKS.to_vec()),
+            input: String::new(),
+            input_mode: InputMode::Normal,
+            input_history: Vec::new(),
         }
     }
 
-    pub fn on_key(&mut self, c: char) {
-        match c {
-            'q' => {
-                self.should_quit = true;
-            },
-            'p' => {
-                self.show_popup = !self.show_popup;
+    pub fn register_keybinds(&mut self) -> io::Result<()> {
+
+        if let Event::Key(key) = event::read()? {
+            match self.input_mode {
+                InputMode::Normal => match key.code {
+                    KeyCode::Char('e') => {
+                        self.input_mode = InputMode::Editing;
+                    }
+                    KeyCode::Char('q') => {
+                        self.should_quit = true;
+                    },
+                    KeyCode::Char('p') => {
+                        self.show_popup = !self.show_popup;
+                    }
+                    _ => {}
+                },
+
+                InputMode::Editing => match key.code {
+                    KeyCode::Enter => {
+                        self.input_history.push(self.input.drain(..).collect());
+                    }
+                    KeyCode::Char(c) => {
+                        self.input.push(c);
+                    }
+                    KeyCode::Backspace => {
+                        self.input.pop();
+                    }
+                    KeyCode::Esc => {
+                        self.input_mode = InputMode::Normal;
+                    }
+                    _ => {}
+                }
             }
-            _ => {}
         }
+
+        return Ok(());
     }
 }
