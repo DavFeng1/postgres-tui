@@ -22,8 +22,9 @@ impl<T> StatefulList<T> {
 
 pub struct App<'a> {
     pub title: &'a str,
-    pub should_quit: bool,
     pub tasks: StatefulList<&'a str>,
+    pub show_popup: bool,
+    pub should_quit: bool,
 }
 
 
@@ -32,6 +33,7 @@ impl<'a> App<'a> {
         App {
             title,
             should_quit: false,
+            show_popup: true,
             tasks: StatefulList::with_items(TASKS.to_vec()),
         }
     }
@@ -40,6 +42,9 @@ impl<'a> App<'a> {
         match c {
             'q' => {
                 self.should_quit = true;
+            },
+            'p' => {
+                self.show_popup = !self.show_popup;
             }
             _ => {}
         }
