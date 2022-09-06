@@ -1,6 +1,7 @@
 mod crossterm;
 mod app;
 mod ui;
+mod postgres;
 
 mod components;
 

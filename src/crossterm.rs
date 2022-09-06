@@ -39,6 +39,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
         LeaveAlternateScreen,
         DisableMouseCapture
     )?;
+
     terminal.show_cursor()?;
 
     if let Err(err) = res {
@@ -60,7 +61,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
         }
 
         if app.should_quit {
-            return Ok(());
+            return Ok(())
         }
     }
 }
+

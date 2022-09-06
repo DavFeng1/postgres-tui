@@ -1,4 +1,5 @@
 use crossterm::event::{self, KeyCode, Event};
+use crate::postgres::connect;
 use std::io;
 
 #[derive(Debug)]
@@ -33,7 +34,7 @@ impl<'a> App<'a> {
             username: String::from("root"),
         };
 
-        App {
+        let mut app = App {
             title,
             should_quit: false,
             show_popup: true,
@@ -41,7 +42,16 @@ impl<'a> App<'a> {
             input_mode: InputMode::Normal,
             input_history: Vec::new(),
             psql_connection_options: initial_connection_options,
-        }
+        };
+
+        app.connect();
+
+        app
+    }
+
+    pub fn connect(&mut self) {
+        let client = connect();
+        println!("it worked");
     }
 
     pub fn register_keybinds(&mut self) -> io::Result<()> {
