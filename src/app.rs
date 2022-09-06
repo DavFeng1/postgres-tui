@@ -7,6 +7,12 @@ pub enum InputMode {
     Editing,
 }
 
+pub struct PsqlConnectionOptions {
+    host: String,
+    port: String,
+    username: String,
+}
+
 
 pub struct App<'a> {
     pub title: &'a str,
@@ -15,11 +21,18 @@ pub struct App<'a> {
     pub input: String,
     pub input_mode: InputMode,
     input_history: Vec<String>,
+    psql_connection_options: PsqlConnectionOptions,
 }
 
 
 impl<'a> App<'a> {
     pub fn new(title: &'a str) -> App<'a> {
+        let initial_connection_options = PsqlConnectionOptions {
+            host:  String::from("127.0.0.1"),
+            port: String::from("5432"),
+            username: String::from("root"),
+        };
+
         App {
             title,
             should_quit: false,
@@ -27,11 +40,11 @@ impl<'a> App<'a> {
             input: String::new(),
             input_mode: InputMode::Normal,
             input_history: Vec::new(),
+            psql_connection_options: initial_connection_options,
         }
     }
 
     pub fn register_keybinds(&mut self) -> io::Result<()> {
-
         if let Event::Key(key) = event::read()? {
             match self.input_mode {
                 InputMode::Normal => match key.code {
