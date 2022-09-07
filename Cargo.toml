@@ -1,5 +1,5 @@
 [package]
-name = "postgres_term_ui"
+name = "postgres_tui"
 version = "0.1.0"
 edition = "2021"
 

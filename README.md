@@ -24,7 +24,7 @@ Clone the repo and run the app:
 ```
 git clone https://github.com/DavFeng1/PostgresTermUI.git
 cd postgres-tui
-cargo run
+cargo run --bin postgres_tui
 ```
 
 For more about installation and rust in general see the [official guide to the rust programming language](https://doc.rust-lang.org/book/ch01-01-installation.html).

@@ -10,10 +10,8 @@ pub enum InputMode {
 
 pub struct PsqlConnectionOptions {
     host: String,
-    port: String,
-    username: String,
+    user: String,
 }
-
 
 pub struct App<'a> {
     pub title: &'a str,
@@ -21,6 +19,7 @@ pub struct App<'a> {
     pub should_quit: bool,
     pub input: String,
     pub input_mode: InputMode,
+    pub debug_message: String,
     input_history: Vec<String>,
     psql_connection_options: PsqlConnectionOptions,
 }
@@ -29,9 +28,8 @@ pub struct App<'a> {
 impl<'a> App<'a> {
     pub fn new(title: &'a str) -> App<'a> {
         let initial_connection_options = PsqlConnectionOptions {
-            host:  String::from("127.0.0.1"),
-            port: String::from("5432"),
-            username: String::from("root"),
+            host:  String::from("localhost"),
+            user: String::from("postgres"),
         };
 
         let mut app = App {
@@ -41,6 +39,7 @@ impl<'a> App<'a> {
             input: String::new(),
             input_mode: InputMode::Normal,
             input_history: Vec::new(),
+            debug_message: String::from("test"),
             psql_connection_options: initial_connection_options,
         };
 
@@ -50,8 +49,12 @@ impl<'a> App<'a> {
     }
 
     pub fn connect(&mut self) {
-        let client = connect();
-        println!("it worked");
+
+        connect(
+            self.psql_connection_options.host.as_str(),
+            self.psql_connection_options.user.as_str()
+        ).expect("Grabbing postgres client");
+
     }
 
     pub fn register_keybinds(&mut self) -> io::Result<()> {

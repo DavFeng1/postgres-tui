@@ -1,8 +1,9 @@
-use postgres::{Client, NoTls};
+use postgres::{Client, Error, NoTls};
 
-pub fn connect() -> Option<Client> {
-    let client = Client::connect("host=localhost user=postgres", NoTls);
-
-    client.ok()
+pub fn connect(host: &str, user: &str) -> Result<Client, Error> {
+    Client::connect(
+        format!("host={} user={}", host, user).as_str(),
+        NoTls
+    )
 }
 
