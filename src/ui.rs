@@ -5,7 +5,7 @@ use tui::{
     Frame,
 };
 
-pub fn draw<B: Backend>(f: &mut Frame<B>, app: &App) {
+pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
     topbar::render(f, app);
     sidebar::render(f, app);

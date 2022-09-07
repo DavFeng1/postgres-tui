@@ -1,13 +1,28 @@
 use crate::app::App;
+use crate::postgres::query::get_databases;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders},
-    style::{ Color, Style},
+    widgets::{Block, Borders, ListItem, List},
+    style::{ Color, Style },
     Frame,
 };
 
-pub fn render<B: Backend>(f: &mut Frame<B>, _app: &App) {
+pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App) {
+
+    let mut database_list: Vec<ListItem> = vec!();
+
+    for row in get_databases(&mut app.postgres_client) {
+        let database_name: String = row.get(0);
+        let list_item = ListItem::new(database_name);
+
+        database_list.push(list_item);
+    }
+
+    let items = List::new(database_list).block(Block::default()
+        .title(" Explorer ")
+        .borders(Borders::ALL)
+        .style(Style::default().fg(Color::Green)));
 
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -22,13 +37,6 @@ pub fn render<B: Backend>(f: &mut Frame<B>, _app: &App) {
         .vertical_margin(1)
         .split(f.size());
 
-    let default_style = Style::default().fg(Color::Red);
-
-    let block = Block::default()
-        .title(" Explorer ")
-        .borders(Borders::ALL)
-        .style(default_style);
-
-    f.render_widget(block, chunks[0]);
+    f.render_widget(items, chunks[0])
 }
 

@@ -13,8 +13,8 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &App, percent_x: u16, percent_y
 
     let popup_block = Block::default().borders(Borders::ALL).title(
         match app.input_mode {
-            InputMode::Normal => "Normal mode",
-            InputMode::Editing => "Editing mode"
+            InputMode::Normal => "Normal mode: Press e to switch to edit mode",
+            InputMode::Editing => "Editing mode: Press esc to switch to normal"
         }
     );
 

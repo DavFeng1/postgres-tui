@@ -1,6 +1,8 @@
+use postgres::Client;
 use crossterm::event::{self, KeyCode, Event};
-use crate::postgres::connect;
 use std::io;
+
+use crate::postgres::connect;
 
 #[derive(Debug)]
 pub enum InputMode {
@@ -8,31 +10,43 @@ pub enum InputMode {
     Editing,
 }
 
-pub struct PsqlConnectionOptions {
-    host: String,
-    user: String,
+pub struct PSQLConnectionOptions {
+    pub host: String,
+    pub user: String,
 }
 
-pub struct App<'a> {
-    pub title: &'a str,
+pub enum FocusElement {
+    Sidebar,
+    Main,
+    SearchBar,
+    Popup,
+}
+
+pub struct App {
+    pub title: String,
     pub show_popup: bool,
     pub should_quit: bool,
     pub input: String,
     pub input_mode: InputMode,
     pub debug_message: String,
+    pub postgres_client: Client,
+    pub focused_element: FocusElement,
     input_history: Vec<String>,
-    psql_connection_options: PsqlConnectionOptions,
 }
 
 
-impl<'a> App<'a> {
-    pub fn new(title: &'a str) -> App<'a> {
-        let initial_connection_options = PsqlConnectionOptions {
+impl App {
+
+    pub fn new(title: String) -> App {
+        let default_connection_options = PSQLConnectionOptions {
             host:  String::from("localhost"),
             user: String::from("postgres"),
         };
 
-        let mut app = App {
+        let client = connect(default_connection_options)
+            .expect("Grabbing postgres client");
+
+        App {
             title,
             should_quit: false,
             show_popup: true,
@@ -40,27 +54,28 @@ impl<'a> App<'a> {
             input_mode: InputMode::Normal,
             input_history: Vec::new(),
             debug_message: String::from("test"),
-            psql_connection_options: initial_connection_options,
-        };
-
-        app.connect();
-
-        app
+            postgres_client: client,
+            focused_element: FocusElement::Popup
+        }
     }
 
-    pub fn connect(&mut self) {
-
-        connect(
-            self.psql_connection_options.host.as_str(),
-            self.psql_connection_options.user.as_str()
-        ).expect("Grabbing postgres client");
-
-    }
 
     pub fn register_keybinds(&mut self) -> io::Result<()> {
         if let Event::Key(key) = event::read()? {
             match self.input_mode {
                 InputMode::Normal => match key.code {
+                    KeyCode::Char('1') => {
+                        self.focused_element = FocusElement::Sidebar
+                    }
+                    KeyCode::Char('2') => {
+                        self.focused_element = FocusElement::Main
+                    }
+                    KeyCode::Char('3') => {
+                        self.focused_element = FocusElement::SearchBar
+                    }
+                    KeyCode::Char('4') => {
+                        self.focused_element = FocusElement::Popup
+                    }
                     KeyCode::Char('e') => {
                         self.input_mode = InputMode::Editing;
                     }
@@ -91,6 +106,6 @@ impl<'a> App<'a> {
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 }
