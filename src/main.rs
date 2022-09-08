@@ -1,21 +1,18 @@
 mod app;
-mod ui;
 mod postgres;
 mod components;
 
 use crate::app::App;
-use crate::ui::draw;
+use crate::components::draw;
+
+use std::{error::Error, io};
 use crossterm::{
     event::{DisableMouseCapture, EnableMouseCapture},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{
-    error::Error,
-    io
-};
 use tui::{
-    backend::{Backend, CrosstermBackend},
+    backend::CrosstermBackend,
     Terminal,
 };
 
@@ -36,7 +33,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 
     // create app and run it
     let mut app = App::new(String::from("postgres tui"));
-    let res = run_app(&mut terminal, &mut app);
+    let res = run_loop(&mut terminal, &mut app);
 
     // restore terminal
     disable_raw_mode()?;
@@ -55,16 +52,12 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<()> {
+fn run_loop(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, app: &mut App) -> io::Result<()> {
 
     loop {
-        terminal.draw(|f| draw(f, app))?;
+        terminal.draw(|f| draw(f, app)).expect("Failed to draw");
 
-        let register_keybinds_succeeded = app.register_keybinds();
-
-        if register_keybinds_succeeded.is_err() {
-            app.should_quit = true;
-        }
+        app.register_keybinds().expect("Error registering keybinds");
 
         if app.should_quit {
             return Ok(())

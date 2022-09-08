@@ -1,68 +1,76 @@
-use crate::app::{App, InputMode};
+use std::io::Stdout;
 use tui::{
-    backend::Backend,
-    layout::{Constraint, Direction, Layout},
+    backend::CrosstermBackend,
+    layout::{Alignment,Constraint, Direction, Layout},
     widgets::{Block, Borders, Clear, Paragraph},
-    style::{ Color, Style},
+    style::{Color, Style},
     Frame,
 };
+use crate::components::Component;
 
-pub fn render<B: Backend>(f: &mut Frame<B>, app: &App, percent_x: u16, percent_y: u16) {
+pub struct KeybindsPopup {
+    percent_x: u16,
+    percent_y: u16,
+}
 
-    let size = f.size();
-
-    let popup_block = Block::default().borders(Borders::ALL).title(
-        match app.input_mode {
-            InputMode::Normal => "Normal mode: Press e to switch to edit mode",
-            InputMode::Editing => "Editing mode: Press esc to switch to normal"
-        }
-    );
-
-    let input = Paragraph::new(app.input.as_ref())
-        .style(match app.input_mode {
-            InputMode::Normal => Style::default().fg(Color::Green),
-            InputMode::Editing => Style::default().fg(Color::Yellow),
-        })
-        .block(popup_block);
-
-
-    let vertical_layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(
-            [
-                Constraint::Percentage((100 - percent_y) / 2),
-                Constraint::Percentage(percent_y),
-                Constraint::Percentage((100 - percent_y) / 2),
-            ]
-            .as_ref(),
-        )
-        .split(size);
-
-    let area = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints(
-            [
-                Constraint::Percentage((100 - percent_x) / 2),
-                Constraint::Percentage(percent_x),
-                Constraint::Percentage((100 - percent_x) / 2),
-            ]
-            .as_ref(),
-        )
-        .split(vertical_layout[1])[1];
-
-    f.render_widget(Clear, area);
-    f.render_widget(input, area);
-
-    match app.input_mode {
-
-        InputMode::Normal => {},
-
-        InputMode::Editing => {
-            f.set_cursor(
-                area.x + app.input.chars().count() as u16 + 1,
-                area.y + 1,
-            )
+impl KeybindsPopup {
+    pub fn new(percent_x: u16, percent_y: u16) -> KeybindsPopup {
+        KeybindsPopup {
+            percent_x,
+            percent_y,
         }
     }
 }
+
+impl Component for KeybindsPopup {
+
+    fn render(&self, f: &mut Frame<CrosstermBackend<Stdout>>) {
+
+        let size = f.size();
+
+        let block = Block::default().borders(Borders::ALL).title("Keybinds");
+
+        let input = Paragraph::new(
+            "
+            1: Focus Side Bar
+            2: Focus Main View
+            3: Focus Search
+            e: In Normal Mode => Edit Mode
+            esc: In Edit Mode => Normal Mode
+            k: Show Keybinds
+            q: quit")
+            .style(Style::default().fg(Color::Yellow))
+            .alignment(Alignment::Left)
+            .block(block);
+
+
+        let vertical_layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(
+                [
+                    Constraint::Percentage((100 - self.percent_y) / 2),
+                    Constraint::Percentage(self.percent_y),
+                    Constraint::Percentage((100 - self.percent_y) / 2),
+                ]
+                .as_ref(),
+            )
+            .split(size);
+
+        let area = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints(
+                [
+                    Constraint::Percentage((100 - self.percent_x) / 2),
+                    Constraint::Percentage(self.percent_x),
+                    Constraint::Percentage((100 - self.percent_x) / 2),
+                ]
+                .as_ref(),
+            )
+            .split(vertical_layout[1])[1];
+
+        f.render_widget(Clear, area);
+        f.render_widget(input, area);
+    }
+}
+
 
