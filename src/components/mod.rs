@@ -1,7 +1,8 @@
 pub mod popup;
-pub mod topbar;
+pub mod searchbar;
 pub mod sidebar;
 pub mod datatable;
+pub mod statusline;
 
 use std::io;
 use tui::{
@@ -16,9 +17,10 @@ pub trait Component {
 }
 
 pub fn draw(f: &mut Frame<CrosstermBackend<io::Stdout>>, app: &mut App) {
-    topbar::render(f, app);
+    searchbar::render(f, app);
     sidebar::render(f, app);
     datatable::render(f, app);
+    statusline::render(f, app);
 
     if app.show_keybinds {
         let p = popup::KeybindsPopup::new(60, 40);
