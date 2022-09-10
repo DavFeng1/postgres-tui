@@ -19,17 +19,10 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         database_list.push(list_item);
     }
 
-    let render_color = if app.focused_element == FocusElement::Sidebar {
-            Color::Green
-        } else {
-            Color::Red
-        };
-
-    let title = if app.focused_element == FocusElement::Sidebar {
-            " Explorer (focused) "
-        } else {
-            " Explorer "
-        };
+    let (render_color, title) = match app.focused_element {
+        FocusElement::Sidebar => ( Color::Green, " Explorer (focused) "),
+        _ => ( Color::Red, " Explorer ")
+    };
 
 
     let items = List::new(database_list).block(Block::default()
@@ -37,7 +30,18 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .borders(Borders::ALL)
         .style(Style::default().fg(render_color)));
 
-    let chunks = Layout::default()
+    let vertical_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(
+            [
+                Constraint::Percentage(95),
+                Constraint::Percentage(5),
+            ]
+            .as_ref(),
+        )
+        .split(f.size());
+
+    let area = Layout::default()
         .direction(Direction::Horizontal)
         .constraints(
             [
@@ -46,9 +50,9 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             ]
             .as_ref(),
         )
-        .horizontal_margin(1)
-        .split(f.size());
+        .split(vertical_layout[0])[0];
 
-    f.render_widget(items, chunks[0])
+
+    f.render_widget(items, area);
 }
 

@@ -6,6 +6,7 @@ use tui::{
     style::{Color, Style},
     Frame,
 };
+
 use crate::components::Component;
 
 pub struct KeybindsPopup {

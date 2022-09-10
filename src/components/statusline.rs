@@ -21,7 +21,6 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &App) {
             ]
             .as_ref(),
         )
-        .horizontal_margin(1)
         .split(size);
 
 
