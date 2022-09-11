@@ -1,8 +1,8 @@
-use crate::app::{App, FocusElement};
+use crate::app::{App, InputMode};
 use tui::{
     backend::Backend,
-    layout::{Direction, Constraint, Layout},
-    widgets::{Block, Borders, Paragraph},
+    layout::{Alignment, Direction, Constraint, Layout},
+    widgets::{Block, Paragraph},
     style::{Color, Style},
     Frame,
 };
@@ -10,7 +10,6 @@ use tui::{
 pub fn render<B: Backend>(f: &mut Frame<B>, app: &App) {
 
     let size = f.size();
-
 
     let area = Layout::default()
         .direction(Direction::Vertical)
@@ -21,16 +20,23 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &App) {
             ]
             .as_ref(),
         )
-        .split(size);
+        .split(size)[1];
 
+    let title = match app.input_mode {
+        InputMode::Normal => " Current mode: Normal ",
+        InputMode::Editing => " Current mode: Edit ",
+    };
 
     let default_style = Style::default().fg(Color::Green);
 
     let block = Block::default()
-        .title(" Mode ")
-        .borders(Borders::ALL)
+        .title_alignment(Alignment::Center)
         .style(default_style);
 
-    f.render_widget(block, area[1]);
+    let input = Paragraph::new(title)
+        .alignment(Alignment::Center)
+        .block(block);
+
+    f.render_widget(input, area);
 }
 

@@ -23,11 +23,11 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &App) {
         .constraints(
             [
                 Constraint::Percentage(10),
-                Constraint::Percentage(90),
+                Constraint::Percentage(85),
+                Constraint::Percentage(5),
             ]
             .as_ref(),
         )
-        .horizontal_margin(1)
         .split(size);
 
     let area = Layout::default()
