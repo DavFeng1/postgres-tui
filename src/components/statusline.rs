@@ -1,36 +1,22 @@
 use crate::app::{App, InputMode};
 use tui::{
     backend::Backend,
-    layout::{Alignment, Direction, Constraint, Layout},
-    widgets::{Block, Paragraph},
+    layout::{Alignment, Rect},
+    widgets::{Block, Paragraph, Borders},
     style::{Color, Style},
     Frame,
 };
 
-pub fn render<B: Backend>(f: &mut Frame<B>, app: &App) {
+pub fn render<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
 
-    let size = f.size();
-
-    let area = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(
-            [
-                Constraint::Percentage(95),
-                Constraint::Percentage(5),
-            ]
-            .as_ref(),
-        )
-        .split(size)[1];
-
-    let title = match app.input_mode {
-        InputMode::Normal => " Current mode: Normal ",
-        InputMode::Editing => " Current mode: Edit ",
+    let (title, color) = match app.input_mode {
+        InputMode::Normal => (" Current mode: Normal ", Color::Blue),
+        InputMode::Editing => (" Current mode: Edit ", Color::Magenta),
     };
 
-    let default_style = Style::default().fg(Color::Green);
+    let default_style = Style::default().fg(color);
 
     let block = Block::default()
-        .title_alignment(Alignment::Center)
         .style(default_style);
 
     let input = Paragraph::new(title)

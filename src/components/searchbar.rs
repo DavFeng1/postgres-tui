@@ -1,4 +1,4 @@
-use crate::app::{App, FocusElement};
+use crate::app::{App, InputMode, FocusElement};
 use tui::{
     backend::Backend,
     layout::Rect,
@@ -6,6 +6,8 @@ use tui::{
     style::{Color, Style},
     Frame,
 };
+
+use unicode_width::UnicodeWidthStr;
 
 pub fn render<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
 
@@ -26,6 +28,14 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
 
     f.render_widget(input, area);
     f.render_widget(block, area);
+
+    if app.input_mode == InputMode::Editing &&
+        app.focused_element == FocusElement::SearchBar {
+            f.set_cursor(
+                area.x + app.input.width() as u16 + 1,
+                area.y + 1,
+            )
+    }
 
 }
 

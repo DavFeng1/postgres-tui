@@ -376,6 +376,7 @@ dependencies = [
  "crossterm",
  "postgres",
  "tui",
+ "unicode-width",
 ]
 
 [[package]]

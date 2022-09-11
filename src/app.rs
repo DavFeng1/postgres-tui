@@ -4,7 +4,7 @@ use std::io;
 
 use crate::postgres::connect;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum InputMode {
     Normal,
     Editing,
