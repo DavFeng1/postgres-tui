@@ -84,21 +84,28 @@ impl App {
                     _ => {}
                 },
 
-                InputMode::Editing => match key.code {
-
-                    KeyCode::Enter => {
-                        self.input_history.push(self.input.drain(..).collect());
+                InputMode::Editing => match self.focused_element {
+                    FocusElement::SearchBar => match key.code {
+                        KeyCode::Enter => {
+                            self.input_history.push(self.input.drain(..).collect());
+                        }
+                        KeyCode::Char(c) => {
+                            self.input.push(c);
+                        }
+                        KeyCode::Backspace => {
+                            self.input.pop();
+                        }
+                        KeyCode::Esc => {
+                            self.input_mode = InputMode::Normal;
+                        }
+                        _ => {}
                     }
-                    KeyCode::Char(c) => {
-                        self.input.push(c);
+                    _ => match key.code {
+                        KeyCode::Esc => {
+                            self.input_mode = InputMode::Normal;
+                        }
+                        _ => {}
                     }
-                    KeyCode::Backspace => {
-                        self.input.pop();
-                    }
-                    KeyCode::Esc => {
-                        self.input_mode = InputMode::Normal;
-                    }
-                    _ => {}
                 }
             }
         }
