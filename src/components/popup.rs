@@ -38,7 +38,7 @@ impl Component for KeybindsPopup {
             3: Focus Search
             e: In Normal Mode => Edit Mode
             esc: In Edit Mode => Normal Mode
-            k: Show Keybinds
+            b: Show Binds
             q: quit")
             .style(Style::default().fg(Color::Yellow))
             .alignment(Alignment::Left)

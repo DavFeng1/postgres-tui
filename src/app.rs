@@ -1,8 +1,14 @@
 use postgres::Client;
 use crossterm::event::{self, KeyCode, Event};
+use tui::widgets::ListState;
+
+
 use std::io;
 
-use crate::postgres::connect;
+use crate::postgres::{
+  connect,
+  query::get_databases,
+};
 
 #[derive(Debug, PartialEq)]
 pub enum InputMode {
@@ -22,6 +28,56 @@ pub enum FocusElement {
     SearchBar,
 }
 
+pub struct StatefulList<T> {
+  pub state: ListState,
+  pub items: Vec<T>,
+}
+
+impl<T> StatefulList<T> {
+  fn with_items(items: Vec<T>) -> StatefulList<T> {
+      StatefulList {
+          state: ListState::default(),
+          items,
+      }
+  }
+
+  fn next(&mut self) {
+      let i = match self.state.selected() {
+          Some(i) => {
+              if i >= self.items.len() - 1 {
+                  0
+              } else {
+                  i + 1
+              }
+          }
+          None => 0,
+      };
+      self.state.select(Some(i));
+  }
+
+  fn previous(&mut self) {
+      let i = match self.state.selected() {
+          Some(i) => {
+              if i == 0 {
+                  self.items.len() - 1
+              } else {
+                  i - 1
+              }
+          }
+          None => 0,
+      };
+      self.state.select(Some(i));
+  }
+
+  fn unselect(&mut self) {
+      self.state.select(None);
+  }
+}
+
+pub struct DatabaseState {
+  pub items: StatefulList<String>,
+}
+
 pub struct App {
     pub title: String,
     pub show_keybinds: bool,
@@ -31,6 +87,7 @@ pub struct App {
     pub debug_message: String,
     pub postgres_client: Client,
     pub focused_element: FocusElement,
+    pub database_state: DatabaseState,
     input_history: Vec<String>,
 }
 
@@ -43,8 +100,19 @@ impl App {
             user: String::from("postgres"),
         };
 
-        let client = connect(default_connection_options)
-            .expect("Grabbing postgres client");
+        let mut client = connect(default_connection_options)
+            .expect("Postgres client");
+
+        let mut database_list = vec!();
+
+        for row in get_databases(&mut client) {
+            let database_name: String = row.get(0);
+            database_list.push(database_name);
+        };
+
+        let database_state = DatabaseState {
+          items: StatefulList::with_items(database_list),
+        };
 
         App {
             title,
@@ -55,7 +123,8 @@ impl App {
             input_history: Vec::new(),
             debug_message: String::from("test"),
             postgres_client: client,
-            focused_element: FocusElement::Sidebar
+            focused_element: FocusElement::Sidebar,
+            database_state: database_state,
         }
     }
 
@@ -78,9 +147,12 @@ impl App {
                     KeyCode::Char('q') => {
                         self.should_quit = true;
                     },
-                    KeyCode::Char('k') => {
+                    KeyCode::Char('b') => {
                         self.show_keybinds = !self.show_keybinds;
-                    }
+                    },
+                    KeyCode::Enter => self.database_state.items.unselect(),
+                    KeyCode::Char('j') => self.database_state.items.next(),
+                    KeyCode::Char('k') => self.database_state.items.previous(),
                     _ => {}
                 },
 

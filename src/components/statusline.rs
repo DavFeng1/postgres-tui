@@ -2,7 +2,7 @@ use crate::app::{App, InputMode};
 use tui::{
     backend::Backend,
     layout::{Alignment, Rect},
-    widgets::{Block, Paragraph, Borders},
+    widgets::{Block, Paragraph},
     style::{Color, Style},
     Frame,
 };
