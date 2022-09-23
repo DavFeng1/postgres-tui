@@ -36,6 +36,8 @@ impl Component for KeybindsPopup {
             1: Focus Side Bar
             2: Focus Main View
             3: Focus Search
+            j: Move down
+            k: Move up
             e: In Normal Mode => Edit Mode
             esc: In Edit Mode => Normal Mode
             b: Show Binds
