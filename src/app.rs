@@ -124,7 +124,7 @@ impl App {
             debug_message: String::from("test"),
             postgres_client: client,
             focused_element: FocusElement::Sidebar,
-            database_state: database_state,
+            database_state,
         }
     }
 
