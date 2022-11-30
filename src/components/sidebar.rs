@@ -33,7 +33,6 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
         )
         .highlight_symbol(">> ");
 
-
     f.render_stateful_widget(items, area, &mut app.database_state.items.state);
 }
 

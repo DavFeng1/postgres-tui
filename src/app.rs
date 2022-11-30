@@ -88,6 +88,7 @@ pub struct App {
     pub postgres_client: Client,
     pub focused_element: FocusElement,
     pub database_state: DatabaseState,
+    pub selected_database: String,
     input_history: Vec<String>,
 }
 
@@ -124,6 +125,7 @@ impl App {
             debug_message: String::from("test"),
             postgres_client: client,
             focused_element: FocusElement::Sidebar,
+            selected_database: String::from(""),
             database_state,
         }
     }
