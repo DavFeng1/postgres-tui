@@ -38,7 +38,7 @@ impl Component for KeybindsPopup {
             3: Focus Search
             j: Move down
             k: Move up
-            e: In Normal Mode => Edit Mode
+            i: In Normal Mode => Edit Mode
             esc: In Edit Mode => Normal Mode
             b: Show Binds
             q: quit")

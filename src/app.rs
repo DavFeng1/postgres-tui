@@ -143,7 +143,7 @@ impl App {
                     KeyCode::Char('3') => {
                         self.focused_element = FocusElement::Main
                     }
-                    KeyCode::Char('e') => {
+                    KeyCode::Char('i') => {
                         self.input_mode = InputMode::Editing;
                     }
                     KeyCode::Char('q') => {
