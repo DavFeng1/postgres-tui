@@ -6,9 +6,9 @@ use postgres::{Client, Error, NoTls};
 pub fn main() -> Result<(), Error> {
     println!("testing postgres");
 
-    let user = "dfeng";
+    let user = "postgres";
     let host = "localhost";
-    let dbname = "dfeng";
+    let dbname = "shakepay_backend";
 
 
     let mut client = Client::connect(format!("host={} user={} dbname={}", host, user, dbname).as_str(), NoTls)?;

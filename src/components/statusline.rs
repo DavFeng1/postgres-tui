@@ -9,7 +9,7 @@ use tui::{
 
 pub fn render<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let (title, color) = match app.input_mode {
-        InputMode::Normal => (" Current mode: Normal ", Color::Blue),
+        InputMode::Normal => (" Current mode: Normal", Color::Blue),
         InputMode::Editing => (" Current mode: Edit ", Color::Magenta),
     };
 

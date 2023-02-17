@@ -1,6 +1,7 @@
 mod app;
 mod components;
 mod postgres;
+mod structs;
 
 use crate::app::App;
 use crate::components::draw;
