@@ -3,6 +3,7 @@ pub mod popup;
 pub mod searchbar;
 pub mod sidebar;
 pub mod statusline;
+pub mod database_tree;
 
 use std::io;
 use tui::{
