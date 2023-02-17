@@ -1,8 +1,8 @@
+use std::io;
+
 use crossterm::event::{self, Event, KeyCode};
 use postgres::Client;
 use tui::widgets::ListState;
-
-use std::io;
 
 use crate::postgres::{connect, query::get_databases};
 
@@ -30,13 +30,6 @@ pub struct StatefulList<T> {
 }
 
 impl<T> StatefulList<T> {
-    fn with_items(items: Vec<T>) -> StatefulList<T> {
-        StatefulList {
-            state: ListState::default(),
-            items,
-        }
-    }
-
     fn next(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
@@ -65,8 +58,12 @@ impl<T> StatefulList<T> {
         self.state.select(Some(i));
     }
 
-    fn unselect(&mut self) {
-        self.state.select(None);
+    fn with_items(items: Vec<T>) -> StatefulList<T> {
+
+        StatefulList {
+            state: ListState::default(),
+            items,
+        }
     }
 }
 
@@ -81,7 +78,7 @@ pub struct App {
     pub input: String,
     pub input_mode: InputMode,
     pub debug_message: String,
-    pub postgres_client: Client,
+    pub postgres_client: Option<Client>,
     pub focused_element: FocusElement,
     pub database_state: DatabaseState,
     pub selected_database: String,
@@ -91,8 +88,8 @@ pub struct App {
 impl App {
     pub fn new(title: String) -> App {
         let default_connection_options = PSQLConnectionOptions {
+            user: String::from("dfeng"),
             host: String::from("localhost"),
-            user: String::from("postgres"),
         };
 
         let mut client = connect(default_connection_options).expect("Postgres client");
@@ -116,11 +113,15 @@ impl App {
             input_mode: InputMode::Normal,
             input_history: Vec::new(),
             debug_message: String::from("test"),
-            postgres_client: client,
+            postgres_client: Some(client),
             focused_element: FocusElement::Sidebar,
             selected_database: String::from(""),
             database_state,
         }
+    }
+
+    pub fn update_connection(&mut self, database_name: String) {
+        self.selected_database = database_name;
     }
 
     pub fn register_keybinds(&mut self) -> io::Result<()> {
@@ -139,7 +140,7 @@ impl App {
                     KeyCode::Char('b') => {
                         self.show_keybinds = !self.show_keybinds;
                     }
-                    KeyCode::Enter => self.database_state.items.unselect(),
+                    KeyCode::Enter => self.handle_database_select(),
                     KeyCode::Char('j') => self.database_state.items.next(),
                     KeyCode::Char('k') => self.database_state.items.previous(),
                     _ => {}
@@ -173,4 +174,13 @@ impl App {
 
         Ok(())
     }
+
+    fn handle_database_select(&mut self) {
+        let selected_database_index = self.database_state.items.state.selected();
+
+        let selected_database_name = self.database_state.items.items[selected_database_index];
+
+        self.selected_database = self
+    }
+
 }

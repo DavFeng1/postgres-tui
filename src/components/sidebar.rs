@@ -16,6 +16,7 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
     let database_list = &app.database_state.items.items;
 
     let mut list_items: Vec<ListItem> = vec![];
+
     for database in database_list {
         let database_name = database.as_str();
         list_items.push(ListItem::new(database_name))
