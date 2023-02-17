@@ -35,7 +35,6 @@ impl<T> StatefulList<T> {
     }
 
     pub fn with_items(items: Vec<T>) -> StatefulList<T> {
-
         StatefulList {
             state: ListState::default(),
             items,

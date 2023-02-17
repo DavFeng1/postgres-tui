@@ -4,10 +4,7 @@ use std::io;
 
 use crate::{
     postgres::{connect, query::get_databases},
-    structs::{
-        database::Database,
-        stateful_list::StatefulList
-    }
+    structs::{database::Database, stateful_list::StatefulList},
 };
 
 #[derive(Debug, PartialEq)]
@@ -29,7 +26,6 @@ pub enum FocusElement {
     SearchBar,
 }
 
-
 pub struct App {
     pub connection: Option<Client>,
     pub database_list: StatefulList<Database>,
@@ -45,7 +41,6 @@ pub struct App {
 }
 
 impl App {
-
     pub fn new(title: String) -> App {
         let default_connection_options = PSQLConnectionOptions {
             user: String::from("postgres"),
@@ -58,15 +53,13 @@ impl App {
         let mut database_list: Vec<Database> = vec![];
 
         for row in get_databases(&mut connection) {
-
             let database = Database {
                 name: row.get(0),
-                tables:  vec![],
+                tables: vec![],
             };
 
             database_list.push(database);
         }
-
 
         App {
             title,
@@ -135,15 +128,19 @@ impl App {
     }
 
     fn handle_database_select(&mut self) {
-        let selected_database_index = self.database_list.state
+        let selected_database_index = self
+            .database_list
+            .state
             .selected()
             .ok_or("no database selected");
 
-        let selected_database_name: String = self.database_list
-            .items[selected_database_index.unwrap()]
-            .name.clone();
+        let selected_database_name: String = self.database_list.items
+            [selected_database_index.unwrap()]
+        .name
+        .clone();
 
-        self.update_connection(selected_database_name).expect("workeds");
+        self.update_connection(selected_database_name)
+            .expect("workeds");
     }
 
     fn update_connection(&mut self, database_name: String) -> Result<(), Error> {
@@ -153,11 +150,16 @@ impl App {
             let connection_to_selected_database = PSQLConnectionOptions {
                 host: String::from("localhost"),
                 user: String::from("postgres"),
-                dbname: Some(self.selected_database.clone())
+                dbname: Some(self.selected_database.clone()),
             };
 
             let mut connection = connect(connection_to_selected_database).expect("db client");
-            let result = connection.query("SELECT tablename FROM pg_tables where schemaname = 'public'", &[]).expect("table rows");
+            let result = connection
+                .query(
+                    "SELECT tablename FROM pg_tables where schemaname = 'public'",
+                    &[],
+                )
+                .expect("table rows");
 
             let mut table_names = vec![];
             for row in result {
@@ -165,9 +167,7 @@ impl App {
                 table_names.push(name);
             }
 
-
             for database in self.database_list.items.iter_mut() {
-
                 if database.name == database_name.clone() {
                     database.tables = table_names;
                     break;
@@ -178,7 +178,5 @@ impl App {
 
             Ok(())
         }
-
     }
 }
-

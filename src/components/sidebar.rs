@@ -1,24 +1,24 @@
 use crate::app::{App, FocusElement};
 use tui::{
     backend::Backend,
+    buffer::Buffer,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
-    widgets::{Block, Borders, List, ListItem, Paragraph, Widget},
     text::{Span, Spans},
-    Frame, buffer::Buffer,
+    widgets::{Block, Borders, List, ListItem, Paragraph, Widget},
+    Frame,
 };
 
 pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
-
     // Title
     let (render_color, title) = match app.focused_element {
-
-        FocusElement::Sidebar => (Color::Green, format!(" Explorer (focused) {}", app.selected_database)),
+        FocusElement::Sidebar => (
+            Color::Green,
+            format!(" Explorer (focused) {}", app.selected_database),
+        ),
 
         _ => (Color::Red, format!(" Explorer {}", app.selected_database)),
     };
-    
-
 
     // Fetch data
     let database_list = &app.database_list.items;
@@ -36,7 +36,6 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
         list_items.push(ListItem::new(database_name));
     }
 
-    
     // Basic stateful widget
 
     // let items = List::new(list_items)
@@ -51,24 +50,17 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
     //
     // f.render_stateful_widget(items, area, &mut app.database_list.state);
 
-
     // Try building the tree
 
-    
     let border_block1 = Block::default()
         .title(title)
         .borders(Borders::ALL)
         .style(Style::default().fg(render_color));
 
-
     let items = vec![String::from("hello"), String::from("world")];
 
-    f.render_widget(
-        CustomWidget::new(items),
-        area,
-    );
+    f.render_widget(CustomWidget::new(items), area);
 }
-
 
 #[derive(Debug, Clone)]
 struct CustomWidget {
@@ -77,10 +69,7 @@ struct CustomWidget {
 
 impl CustomWidget {
     pub fn new(items: Vec<String>) -> CustomWidget {
-
-        Self {
-            items,
-        }
+        Self { items }
     }
 }
 
@@ -88,8 +77,4 @@ impl<'a> Widget for CustomWidget {
     fn render(self, area: Rect, buf: &mut Buffer) {
         println!("Not implemented");
     }
- }
-
-
-
-
+}
