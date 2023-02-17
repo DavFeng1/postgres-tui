@@ -1,20 +1,17 @@
 mod app;
-mod postgres;
 mod components;
+mod postgres;
 
 use crate::app::App;
 use crate::components::draw;
 
-use std::{error::Error, io};
 use crossterm::{
     event::{DisableMouseCapture, EnableMouseCapture},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use tui::{
-    backend::CrosstermBackend,
-    Terminal,
-};
+use std::{error::Error, io};
+use tui::{backend::CrosstermBackend, Terminal};
 
 fn main() -> Result<(), Box<dyn Error>> {
     run()
@@ -52,16 +49,17 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_loop(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, app: &mut App) -> io::Result<()> {
-
+fn run_loop(
+    terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
+    app: &mut App,
+) -> io::Result<()> {
     loop {
         terminal.draw(|f| draw(f, app)).expect("Failed to draw");
 
         app.register_keybinds().expect("Error registering keybinds");
 
         if app.should_quit {
-            return Ok(())
+            return Ok(());
         }
     }
 }
-

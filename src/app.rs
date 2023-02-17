@@ -1,14 +1,10 @@
+use crossterm::event::{self, Event, KeyCode};
 use postgres::Client;
-use crossterm::event::{self, KeyCode, Event};
 use tui::widgets::ListState;
-
 
 use std::io;
 
-use crate::postgres::{
-  connect,
-  query::get_databases,
-};
+use crate::postgres::{connect, query::get_databases};
 
 #[derive(Debug, PartialEq)]
 pub enum InputMode {
@@ -29,53 +25,53 @@ pub enum FocusElement {
 }
 
 pub struct StatefulList<T> {
-  pub state: ListState,
-  pub items: Vec<T>,
+    pub state: ListState,
+    pub items: Vec<T>,
 }
 
 impl<T> StatefulList<T> {
-  fn with_items(items: Vec<T>) -> StatefulList<T> {
-      StatefulList {
-          state: ListState::default(),
-          items,
-      }
-  }
+    fn with_items(items: Vec<T>) -> StatefulList<T> {
+        StatefulList {
+            state: ListState::default(),
+            items,
+        }
+    }
 
-  fn next(&mut self) {
-      let i = match self.state.selected() {
-          Some(i) => {
-              if i >= self.items.len() - 1 {
-                  0
-              } else {
-                  i + 1
-              }
-          }
-          None => 0,
-      };
-      self.state.select(Some(i));
-  }
+    fn next(&mut self) {
+        let i = match self.state.selected() {
+            Some(i) => {
+                if i >= self.items.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.state.select(Some(i));
+    }
 
-  fn previous(&mut self) {
-      let i = match self.state.selected() {
-          Some(i) => {
-              if i == 0 {
-                  self.items.len() - 1
-              } else {
-                  i - 1
-              }
-          }
-          None => 0,
-      };
-      self.state.select(Some(i));
-  }
+    fn previous(&mut self) {
+        let i = match self.state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.items.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.state.select(Some(i));
+    }
 
-  fn unselect(&mut self) {
-      self.state.select(None);
-  }
+    fn unselect(&mut self) {
+        self.state.select(None);
+    }
 }
 
 pub struct DatabaseState {
-  pub items: StatefulList<String>,
+    pub items: StatefulList<String>,
 }
 
 pub struct App {
@@ -92,27 +88,24 @@ pub struct App {
     input_history: Vec<String>,
 }
 
-
 impl App {
-
     pub fn new(title: String) -> App {
         let default_connection_options = PSQLConnectionOptions {
-            host:  String::from("localhost"),
+            host: String::from("localhost"),
             user: String::from("postgres"),
         };
 
-        let mut client = connect(default_connection_options)
-            .expect("Postgres client");
+        let mut client = connect(default_connection_options).expect("Postgres client");
 
-        let mut database_list = vec!();
+        let mut database_list = vec![];
 
         for row in get_databases(&mut client) {
             let database_name: String = row.get(0);
             database_list.push(database_name);
-        };
+        }
 
         let database_state = DatabaseState {
-          items: StatefulList::with_items(database_list),
+            items: StatefulList::with_items(database_list),
         };
 
         App {
@@ -134,24 +127,18 @@ impl App {
         if let Event::Key(key) = event::read()? {
             match self.input_mode {
                 InputMode::Normal => match key.code {
-                    KeyCode::Char('1') => {
-                        self.focused_element = FocusElement::Sidebar
-                    }
-                    KeyCode::Char('2') => {
-                        self.focused_element = FocusElement::SearchBar
-                    }
-                    KeyCode::Char('3') => {
-                        self.focused_element = FocusElement::Main
-                    }
+                    KeyCode::Char('1') => self.focused_element = FocusElement::Sidebar,
+                    KeyCode::Char('2') => self.focused_element = FocusElement::SearchBar,
+                    KeyCode::Char('3') => self.focused_element = FocusElement::Main,
                     KeyCode::Char('i') => {
                         self.input_mode = InputMode::Editing;
                     }
                     KeyCode::Char('q') => {
                         self.should_quit = true;
-                    },
+                    }
                     KeyCode::Char('b') => {
                         self.show_keybinds = !self.show_keybinds;
-                    },
+                    }
                     KeyCode::Enter => self.database_state.items.unselect(),
                     KeyCode::Char('j') => self.database_state.items.next(),
                     KeyCode::Char('k') => self.database_state.items.previous(),
@@ -173,14 +160,14 @@ impl App {
                             self.input_mode = InputMode::Normal;
                         }
                         _ => {}
-                    }
+                    },
                     _ => match key.code {
                         KeyCode::Esc => {
                             self.input_mode = InputMode::Normal;
                         }
                         _ => {}
-                    }
-                }
+                    },
+                },
             }
         }
 

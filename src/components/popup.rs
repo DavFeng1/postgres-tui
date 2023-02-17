@@ -1,9 +1,9 @@
 use std::io::Stdout;
 use tui::{
     backend::CrosstermBackend,
-    layout::{Alignment,Constraint, Direction, Layout},
-    widgets::{Block, Borders, Clear, Paragraph},
+    layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style},
+    widgets::{Block, Borders, Clear, Paragraph},
     Frame,
 };
 
@@ -24,9 +24,7 @@ impl KeybindsPopup {
 }
 
 impl Component for KeybindsPopup {
-
     fn render(&self, f: &mut Frame<CrosstermBackend<Stdout>>) {
-
         let size = f.size();
 
         let block = Block::default().borders(Borders::ALL).title("Keybinds");
@@ -41,11 +39,11 @@ impl Component for KeybindsPopup {
             i: In Normal Mode => Edit Mode
             esc: In Edit Mode => Normal Mode
             b: Show Binds
-            q: quit")
-            .style(Style::default().fg(Color::Yellow))
-            .alignment(Alignment::Left)
-            .block(block);
-
+            q: quit",
+        )
+        .style(Style::default().fg(Color::Yellow))
+        .alignment(Alignment::Left)
+        .block(block);
 
         let vertical_layout = Layout::default()
             .direction(Direction::Vertical)
@@ -75,5 +73,3 @@ impl Component for KeybindsPopup {
         f.render_widget(input, area);
     }
 }
-
-

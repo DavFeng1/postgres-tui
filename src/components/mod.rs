@@ -1,13 +1,13 @@
+pub mod datatable;
 pub mod popup;
 pub mod searchbar;
 pub mod sidebar;
-pub mod datatable;
 pub mod statusline;
 
 use std::io;
 use tui::{
     backend::CrosstermBackend,
-    layout::{Constraint, Layout, Direction},
+    layout::{Constraint, Direction, Layout},
     Frame,
 };
 
@@ -18,37 +18,20 @@ pub trait Component {
 }
 
 pub fn draw(f: &mut Frame<CrosstermBackend<io::Stdout>>, app: &mut App) {
-
     let area = f.size();
 
     let horizontal_split = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(
-            [
-                Constraint::Percentage(30),
-                Constraint::Percentage(70),
-            ].as_ref()
-        )
+        .constraints([Constraint::Percentage(30), Constraint::Percentage(70)].as_ref())
         .split(area);
 
     let statusline_area = Layout::default()
-        .constraints(
-            [
-                Constraint::Ratio(23, 24),
-                Constraint::Ratio(1, 24),
-            ].as_ref()
-        )
+        .constraints([Constraint::Ratio(23, 24), Constraint::Ratio(1, 24)].as_ref())
         .split(area)[1];
 
     let left_vertical_split = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(
-            [
-                Constraint::Ratio(23, 24),
-                Constraint::Ratio(1, 24),
-
-            ].as_ref()
-        )
+        .constraints([Constraint::Ratio(23, 24), Constraint::Ratio(1, 24)].as_ref())
         .split(horizontal_split[0]);
 
     let right_vertical_split = Layout::default()
@@ -56,10 +39,10 @@ pub fn draw(f: &mut Frame<CrosstermBackend<io::Stdout>>, app: &mut App) {
         .constraints(
             [
                 Constraint::Ratio(2, 24),
-                Constraint::Ratio(21,24),
-                Constraint::Ratio(1,24),
-
-            ].as_ref()
+                Constraint::Ratio(21, 24),
+                Constraint::Ratio(1, 24),
+            ]
+            .as_ref(),
         )
         .split(horizontal_split[1]);
 
@@ -73,5 +56,3 @@ pub fn draw(f: &mut Frame<CrosstermBackend<io::Stdout>>, app: &mut App) {
         p.render(f);
     }
 }
-
-

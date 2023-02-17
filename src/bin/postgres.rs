@@ -8,10 +8,7 @@ pub fn main() -> Result<(), Error> {
     let user = "postgres";
     let host = "localhost";
 
-    let mut client = Client::connect(
-        format!("host={} user={}", host, user).as_str(),
-        NoTls
-    )?;
+    let mut client = Client::connect(format!("host={} user={}", host, user).as_str(), NoTls)?;
 
     let result = client.query("SELECT datname from pg_database", &[])?;
 
@@ -22,4 +19,3 @@ pub fn main() -> Result<(), Error> {
 
     Ok(())
 }
-
