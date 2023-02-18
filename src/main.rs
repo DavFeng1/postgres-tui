@@ -31,7 +31,12 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 
     // create app and run it
     let mut app = App::new(String::from("postgres tui"));
+
     let res = run_loop(&mut terminal, &mut app);
+
+    if let Err(err) = res {
+        println!("{:?}", err)
+    }
 
     // restore terminal
     disable_raw_mode()?;
@@ -42,10 +47,6 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     )?;
 
     terminal.show_cursor()?;
-
-    if let Err(err) = res {
-        println!("{:?}", err)
-    }
 
     Ok(())
 }

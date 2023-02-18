@@ -4,7 +4,7 @@ use std::io;
 
 use crate::{
     postgres::{connect, query::get_databases},
-    structs::{database::Database, stateful_list::StatefulList},
+    structs::database_state::DatabaseState,
 };
 
 #[derive(Debug, PartialEq)]
@@ -28,7 +28,7 @@ pub enum FocusElement {
 
 pub struct App {
     pub connection: Option<Client>,
-    pub database_list: StatefulList<Database>,
+    pub database_state: DatabaseState,
     pub debug_message: String,
     pub focused_element: FocusElement,
     pub input: String,
@@ -50,18 +50,16 @@ impl App {
 
         let mut connection = connect(default_connection_options).expect("Postgres client");
 
-        let mut database_list: Vec<Database> = vec![];
+        let mut database_list: Vec<String> = vec![];
 
         for row in get_databases(&mut connection) {
-            let database = Database {
-                name: row.get(0),
-                tables: vec![],
-            };
+            let name: String = row.get(0);
 
-            database_list.push(database);
+            database_list.push(name);
         }
 
         App {
+            database_state: DatabaseState::with_database_list(database_list),
             title,
             should_quit: false,
             show_keybinds: true,
@@ -72,7 +70,6 @@ impl App {
             connection: Some(connection),
             focused_element: FocusElement::Sidebar,
             selected_database: String::from(""),
-            database_list: StatefulList::with_items(database_list),
         }
     }
 
@@ -93,8 +90,8 @@ impl App {
                         self.show_keybinds = !self.show_keybinds;
                     }
                     KeyCode::Enter => self.handle_database_select(),
-                    KeyCode::Char('j') => self.database_list.next(),
-                    KeyCode::Char('k') => self.database_list.previous(),
+                    KeyCode::Char('j') => self.database_state.next(),
+                    KeyCode::Char('k') => self.database_state.prev(),
                     _ => {}
                 },
 
@@ -128,19 +125,13 @@ impl App {
     }
 
     fn handle_database_select(&mut self) {
-        let selected_database_index = self
-            .database_list
-            .state
-            .selected()
-            .ok_or("no database selected");
+        let selected_database_index = self.database_state.selected_database.ok_or("no database selected");
 
-        let selected_database_name: String = self.database_list.items
-            [selected_database_index.unwrap()]
-        .name
-        .clone();
+        let selected_database_name: String =
+            self.database_state.database_list[selected_database_index.unwrap()].clone();
 
         self.update_connection(selected_database_name)
-            .expect("workeds");
+            .expect("worked");
     }
 
     fn update_connection(&mut self, database_name: String) -> Result<(), Error> {
@@ -167,9 +158,12 @@ impl App {
                 table_names.push(name);
             }
 
-            for database in self.database_list.items.iter_mut() {
-                if database.name == database_name.clone() {
-                    database.tables = table_names;
+            for name in self.database_state.database_list.iter() {
+                if name.clone() == database_name {
+                    self.database_state
+                        .tables_map
+                        .insert(name.to_string(), table_names);
+
                     break;
                 }
             }
@@ -180,3 +174,4 @@ impl App {
         }
     }
 }
+
