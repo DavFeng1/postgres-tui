@@ -4,6 +4,7 @@ use std::collections::HashMap;
 pub struct DatabaseState {
     pub database_list: Vec<String>,
     pub tables_map: HashMap<String, Vec<String>>,
+    pub focused_element: Option<usize>,
     // Index of the current database
     pub selected_database: Option<usize>,
     // Index of the current table
@@ -12,7 +13,7 @@ pub struct DatabaseState {
 
 impl DatabaseState {
     pub fn next(&mut self) {
-        let i = match self.selected_database {
+        let i = match self.focused_element {
             Some(i) => {
                 if i >= self.database_list.len() - 1 {
                     self.database_list.len() - 1
@@ -23,11 +24,11 @@ impl DatabaseState {
             None => 0,
         };
 
-        self.selected_database = Some(i)
+        self.focused_element = Some(i)
     }
 
     pub fn prev(&mut self) {
-        let i: usize = match self.selected_database {
+        let i: usize = match self.focused_element {
             Some(i) => {
                 if i <= 1 {
                     0
@@ -38,13 +39,41 @@ impl DatabaseState {
             None => 0,
         };
 
-        self.selected_database = Some(i)
+        self.focused_element = Some(i)
+    }
+
+    pub fn toggle_select_focused_element(&mut self) {
+
+        match self.focused_element {
+
+            Some(focused_element) => {
+
+                match self.selected_database {
+
+                    Some(selected_database) => {
+
+                        if focused_element == selected_database {
+                            self.selected_database = None;
+                        } else {
+                            self.selected_database = Some(focused_element);
+                        }
+                    },
+
+                    None => {
+                        self.selected_database = Some(focused_element);
+                    }
+                }
+            },
+            None => {},
+        }
     }
 
     pub fn with_database_list(database_list: Vec<String>) -> Self {
+
         Self {
             database_list,
             tables_map: HashMap::default(),
+            focused_element: None,
             selected_database: None,
             selected_table: None,
         }

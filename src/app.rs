@@ -4,7 +4,7 @@ use std::io;
 
 use crate::{
     postgres::{connect, query::get_databases},
-    structs::database_state::DatabaseState,
+    widgets::database_state::DatabaseState,
 };
 
 #[derive(Debug, PartialEq)]
@@ -125,16 +125,20 @@ impl App {
     }
 
     fn handle_database_select(&mut self) {
-        let selected_database_index = self
-            .database_state
-            .selected_database
-            .ok_or("no database selected");
+        self.database_state.toggle_select_focused_element();
 
-        let selected_database_name: String =
-            self.database_state.database_list[selected_database_index.unwrap()].clone();
+        match self.database_state.selected_database {
+            Some(selected_db_index) => {
 
-        self.update_connection(selected_database_name)
-            .expect("worked");
+                let selected_database_name: String =
+                    self.database_state.database_list[selected_db_index].clone();
+
+                self.update_connection(selected_database_name)
+                    .expect("Could not update connection for newly selected database");
+            },
+
+            None => {},
+        }
     }
 
     fn update_connection(&mut self, database_name: String) -> Result<(), Error> {

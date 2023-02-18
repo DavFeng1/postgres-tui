@@ -46,6 +46,11 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
         let mut y_position_to_draw = inner_area.y;
         let starting_x = inner_area.x;
 
+        let focused_element = match state.focused_element {
+            Some(db) => db,
+            None => 0,
+        };
+
         let selected_database = match state.selected_database {
             Some(db) => db,
             None => 0,
@@ -57,9 +62,10 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                 break;
             };
 
+            let is_element_focused = i == focused_element;
             let is_database_selected = i == selected_database;
 
-            let content: String = if is_database_selected {
+            let content: String = if is_element_focused {
                 String::from(">>>") + &database_name
             } else {
                 database_name.to_string()
@@ -81,18 +87,27 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                 };
 
                 for table_name in tables_for_database {
-                    if y_position_to_draw > inner_area.y + inner_area.height {
+                    y_position_to_draw += 1;
+
+                    if y_position_to_draw >= inner_area.y + inner_area.height {
                         break;
                     };
+
+                    let content: String = if is_element_focused {
+                        String::from(">>>") + &table_name
+                    } else {
+                        table_name.to_string()
+                    };
+
+
                     // Padding for nesting
                     buf.set_stringn(
                         starting_x + 3,
                         y_position_to_draw,
-                        table_name,
+                        content,
                         inner_area.width as usize,
                         Style::default(),
                     );
-                    y_position_to_draw += 1;
                 }
             }
             y_position_to_draw += 1;

@@ -1,10 +1,10 @@
 mod app;
-mod components;
+mod ui;
 mod postgres;
-mod structs;
+mod widgets;
 
 use crate::app::App;
-use crate::components::draw;
+use crate::ui::draw;
 
 use crossterm::{
     event::{DisableMouseCapture, EnableMouseCapture},

@@ -7,7 +7,7 @@ use tui::{
     Frame,
 };
 
-use crate::components::Component;
+use crate::ui::Component;
 
 pub struct KeybindsPopup {
     percent_x: u16,

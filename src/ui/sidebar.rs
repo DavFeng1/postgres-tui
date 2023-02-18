@@ -1,6 +1,6 @@
 use crate::{
     app::{App, FocusElement},
-    structs::database_tree::DatabaseTree,
+    widgets::database_tree::DatabaseTree,
 };
 use tui::{
     backend::Backend,

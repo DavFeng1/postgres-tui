@@ -1,3 +1,0 @@
-struct DatabaseTree {
-    name: String,
-}
