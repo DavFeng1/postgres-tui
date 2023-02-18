@@ -22,7 +22,7 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
     };
 
     // Fetch data
-    let database_list = &app.database_state.database_list;
+    let database_list = &app.database_state.databases;
 
     // Try building the tree
     let border_block = Block::default()

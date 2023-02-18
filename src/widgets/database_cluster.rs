@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use super::database::Database;
+
 #[derive(Debug, Clone, Default)]
-pub struct DatabaseState {
-    pub database_list: Vec<String>,
+pub struct DatabaseCluster {
+    pub databases: Vec<Database>,
     pub tables_map: HashMap<String, Vec<String>>,
     pub focused_element: Option<usize>,
     // Index of the current database
@@ -11,12 +13,12 @@ pub struct DatabaseState {
     pub selected_table: Option<usize>,
 }
 
-impl DatabaseState {
+impl DatabaseCluster {
     pub fn next(&mut self) {
         let i = match self.focused_element {
             Some(i) => {
-                if i >= self.database_list.len() - 1 {
-                    self.database_list.len() - 1
+                if i >= self.databases.len() - 1 {
+                    self.databases.len() - 1
                 } else {
                     i + 1
                 }
@@ -43,35 +45,27 @@ impl DatabaseState {
     }
 
     pub fn toggle_select_focused_element(&mut self) {
-
         match self.focused_element {
-
-            Some(focused_element) => {
-
-                match self.selected_database {
-
-                    Some(selected_database) => {
-
-                        if focused_element == selected_database {
-                            self.selected_database = None;
-                        } else {
-                            self.selected_database = Some(focused_element);
-                        }
-                    },
-
-                    None => {
+            Some(focused_element) => match self.selected_database {
+                Some(selected_database) => {
+                    if focused_element == selected_database {
+                        self.selected_database = None;
+                    } else {
                         self.selected_database = Some(focused_element);
                     }
                 }
+
+                None => {
+                    self.selected_database = Some(focused_element);
+                }
             },
-            None => {},
+            None => {}
         }
     }
 
-    pub fn with_database_list(database_list: Vec<String>) -> Self {
-
+    pub fn new(databases: Vec<Database>) -> Self {
         Self {
-            database_list,
+            databases,
             tables_map: HashMap::default(),
             focused_element: None,
             selected_database: None,

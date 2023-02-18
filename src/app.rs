@@ -4,7 +4,7 @@ use std::io;
 
 use crate::{
     postgres::{connect, query::get_databases},
-    widgets::database_state::DatabaseState,
+    widgets::{database::Database, database_cluster::DatabaseCluster},
 };
 
 #[derive(Debug, PartialEq)]
@@ -28,7 +28,7 @@ pub enum FocusElement {
 
 pub struct App {
     pub connection: Option<Client>,
-    pub database_state: DatabaseState,
+    pub database_state: DatabaseCluster,
     pub debug_message: String,
     pub focused_element: FocusElement,
     pub input: String,
@@ -50,16 +50,18 @@ impl App {
 
         let mut connection = connect(default_connection_options).expect("Postgres client");
 
-        let mut database_list: Vec<String> = vec![];
+        let mut databases: Vec<Database> = vec![];
 
-        for row in get_databases(&mut connection) {
-            let name: String = row.get(0);
-
-            database_list.push(name);
-        }
+        let databases = get_databases(&mut connection)
+            .into_iter()
+            .map(|row| Database {
+                name: row.get(0),
+                tables: Vec::new(),
+            })
+            .collect();
 
         App {
-            database_state: DatabaseState::with_database_list(database_list),
+            database_state: DatabaseCluster::new(databases),
             title,
             should_quit: false,
             show_keybinds: true,
@@ -129,15 +131,16 @@ impl App {
 
         match self.database_state.selected_database {
             Some(selected_db_index) => {
-
-                let selected_database_name: String =
-                    self.database_state.database_list[selected_db_index].clone();
+                let selected_database_name: String = self.database_state.databases
+                    [selected_db_index]
+                    .name
+                    .clone();
 
                 self.update_connection(selected_database_name)
                     .expect("Could not update connection for newly selected database");
-            },
+            }
 
-            None => {},
+            None => {}
         }
     }
 
@@ -165,11 +168,11 @@ impl App {
                 table_names.push(name);
             }
 
-            for name in self.database_state.database_list.iter() {
-                if name.clone() == database_name {
+            for database in self.database_state.databases.iter() {
+                if database.name.clone() == database_name {
                     self.database_state
                         .tables_map
-                        .insert(name.to_string(), table_names);
+                        .insert(database.name.to_string(), table_names);
 
                     break;
                 }

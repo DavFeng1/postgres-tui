@@ -1,6 +1,6 @@
 mod app;
-mod ui;
 mod postgres;
+mod ui;
 mod widgets;
 
 use crate::app::App;
