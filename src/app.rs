@@ -125,7 +125,10 @@ impl App {
     }
 
     fn handle_database_select(&mut self) {
-        let selected_database_index = self.database_state.selected_database.ok_or("no database selected");
+        let selected_database_index = self
+            .database_state
+            .selected_database
+            .ok_or("no database selected");
 
         let selected_database_name: String =
             self.database_state.database_list[selected_database_index.unwrap()].clone();
@@ -174,4 +177,3 @@ impl App {
         }
     }
 }
-

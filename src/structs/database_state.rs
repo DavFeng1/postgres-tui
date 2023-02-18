@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-
 #[derive(Debug, Clone, Default)]
 pub struct DatabaseState {
     pub database_list: Vec<String>,
@@ -51,4 +50,3 @@ impl DatabaseState {
         }
     }
 }
-

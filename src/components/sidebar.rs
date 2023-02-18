@@ -1,4 +1,7 @@
-use crate::{app::{App, FocusElement}, structs::database_tree::DatabaseTree};
+use crate::{
+    app::{App, FocusElement},
+    structs::database_tree::DatabaseTree,
+};
 use tui::{
     backend::Backend,
     layout::Rect,
@@ -33,5 +36,3 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
         &mut app.database_state,
     );
 }
-
-

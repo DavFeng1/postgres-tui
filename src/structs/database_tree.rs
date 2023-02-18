@@ -2,11 +2,10 @@ use tui::{
     buffer::Buffer,
     layout::Rect,
     style::Style,
-    widgets::{Block, StatefulWidget, Widget}
+    widgets::{Block, StatefulWidget, Widget},
 };
 
 use super::database_state::DatabaseState;
-
 
 #[derive(Debug, Clone)]
 pub struct DatabaseTree<'a> {
@@ -16,7 +15,7 @@ pub struct DatabaseTree<'a> {
 
 impl<'a> DatabaseTree<'a> {
     pub fn new(databases: Vec<String>) -> DatabaseTree<'a> {
-        Self { 
+        Self {
             block: None,
             state: DatabaseState::with_database_list(databases),
         }
@@ -54,7 +53,6 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
 
         // Draw each database node
         for (i, database_name) in self.state.database_list.iter().enumerate() {
-
             if y_position_to_draw > inner_area.y + inner_area.height {
                 break;
             };
@@ -97,8 +95,7 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                     y_position_to_draw += 1;
                 }
             }
-             y_position_to_draw += 1;
+            y_position_to_draw += 1;
         }
     }
 }
-
