@@ -4,7 +4,9 @@ use std::io;
 
 use crate::{
     postgres::{connect, query::get_databases},
-    widgets::{database::Database, database_cluster::DatabaseCluster},
+    widgets::{
+        database::Database, database_cluster::DatabaseCluster, database_table::DatabaseTable,
+    },
 };
 
 #[derive(Debug, PartialEq)]
@@ -49,8 +51,6 @@ impl App {
         };
 
         let mut connection = connect(default_connection_options).expect("Postgres client");
-
-        let mut databases: Vec<Database> = vec![];
 
         let databases = get_databases(&mut connection)
             .into_iter()
@@ -160,7 +160,7 @@ impl App {
                     "SELECT tablename FROM pg_tables where schemaname = 'public'",
                     &[],
                 )
-                .expect("table rows");
+                .expect("Could not get tables for database");
 
             let mut table_names = vec![];
             for row in result {
@@ -168,11 +168,14 @@ impl App {
                 table_names.push(name);
             }
 
-            for database in self.database_state.databases.iter() {
+            for database in self.database_state.databases.iter_mut() {
                 if database.name.clone() == database_name {
-                    self.database_state
-                        .tables_map
-                        .insert(database.name.to_string(), table_names);
+                    let tables_for_database = table_names
+                        .into_iter()
+                        .map(|name| DatabaseTable::new(name, Vec::new()))
+                        .collect();
+
+                    database.tables = tables_for_database;
 
                     break;
                 }

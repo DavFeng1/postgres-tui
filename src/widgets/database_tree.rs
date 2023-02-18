@@ -81,12 +81,7 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
 
             // Draw tables for the current database
             if is_database_selected {
-                let tables_for_database = match cluster.tables_map.get(&database.name) {
-                    Some(result) => result.clone(),
-                    None => Vec::new(),
-                };
-
-                for table_name in tables_for_database {
+                for table in database.tables.iter() {
                     y_position_to_draw += 1;
 
                     if y_position_to_draw >= inner_area.y + inner_area.height {
@@ -94,9 +89,9 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                     };
 
                     let content: String = if is_element_focused {
-                        String::from(">>>") + &table_name
+                        String::from(">>>") + &table.name
                     } else {
-                        table_name.to_string()
+                        table.name.to_string()
                     };
 
                     // Padding for nesting
