@@ -81,7 +81,6 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
 
             // Draw tables for the current database
             if is_database_selected {
-
                 let tables_for_database = match cluster.tables_map.get(&database.name) {
                     Some(result) => result.clone(),
                     None => Vec::new(),
