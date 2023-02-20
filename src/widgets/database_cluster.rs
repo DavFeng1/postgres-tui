@@ -59,26 +59,23 @@ impl DatabaseCluster {
 
     pub fn toggle_select_focused_element(&mut self) {
         match self.current_focused_database {
-            Some(focused_db_index) => {
-                match self.current_connected_database {
-                    Some(connected_db_index) => {
-                        if focused_db_index == connected_db_index {
-                            self.databases[connected_db_index].is_connected = false;
-                            self.current_connected_database = None
-                        } else {
-                            self.databases[connected_db_index].is_connected = false;
-                            self.databases[focused_db_index].is_connected = true;
-                            self.current_connected_database = Some(focused_db_index);
-                        }
-                    },
-                    None => {
+            Some(focused_db_index) => match self.current_connected_database {
+                Some(connected_db_index) => {
+                    if focused_db_index == connected_db_index {
+                        self.databases[connected_db_index].is_connected = false;
+                        self.current_connected_database = None
+                    } else {
+                        self.databases[connected_db_index].is_connected = false;
                         self.databases[focused_db_index].is_connected = true;
                         self.current_connected_database = Some(focused_db_index);
-                    },
+                    }
                 }
-            }
+                None => {
+                    self.databases[focused_db_index].is_connected = true;
+                    self.current_connected_database = Some(focused_db_index);
+                }
+            },
             None => (),
         }
     }
 }
-
