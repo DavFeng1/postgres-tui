@@ -28,6 +28,8 @@ pub enum FocusElement {
     SearchBar,
 }
 
+// App should store state which are separate from widgets.
+// Widgets should read the state and determin what to render.
 pub struct App {
     pub connection: Option<Client>,
     pub cluster: DatabaseCluster,
@@ -54,10 +56,7 @@ impl App {
 
         let databases = get_databases(&mut connection)
             .into_iter()
-            .map(|row| Database {
-                name: row.get(0),
-                tables: Vec::new(),
-            })
+            .map(|row| Database::new(row.get(0), Vec::new()))
             .collect();
 
         App {
@@ -91,7 +90,7 @@ impl App {
                     KeyCode::Char('b') => {
                         self.show_keybinds = !self.show_keybinds;
                     }
-                    KeyCode::Enter => self.handle_database_select(),
+                    KeyCode::Enter => self.handle_database_toggle(),
                     KeyCode::Char('j') => self.cluster.next(),
                     KeyCode::Char('k') => self.cluster.prev(),
                     _ => {}
@@ -126,19 +125,18 @@ impl App {
         Ok(())
     }
 
-    fn handle_database_select(&mut self) {
+    fn handle_database_toggle(&mut self) {
         self.cluster.toggle_select_focused_element();
 
-        match self.cluster.selected_database {
-            Some(selected_db_index) => {
-                let selected_database_name: String =
-                    self.cluster.databases[selected_db_index].name.clone();
+        for database in self.cluster.databases.iter_mut() {
+            if database.is_connected {
+                let database_name = database.name.clone();
 
-                self.update_connection(selected_database_name)
-                    .expect("Could not update connection for newly selected database");
+                self.update_connection(database_name)
+                    .expect("Could not update connecion for newly selected database");
+
+                break;
             }
-
-            None => {}
         }
     }
 

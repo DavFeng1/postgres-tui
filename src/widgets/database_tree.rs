@@ -30,7 +30,7 @@ impl<'a> DatabaseTree<'a> {
 impl<'a> StatefulWidget for DatabaseTree<'a> {
     type State = DatabaseCluster;
 
-    fn render(mut self, area: Rect, buf: &mut Buffer, cluster: &mut DatabaseCluster) {
+    fn render(mut self, area: Rect, buf: &mut Buffer, _cluster: &mut DatabaseCluster) {
         let inner_area = match self.block.take() {
             Some(b) => {
                 let inner_area = b.inner(area);
@@ -46,37 +46,13 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
         let mut y_position_to_draw = inner_area.y;
         let starting_x = inner_area.x;
 
-        let focused_element = match cluster.focused_element {
-            Some(db) => db,
-            None => 0,
-        };
-
-        // let selected_database = match cluster.selected_database {
-        //     Some(db) => db,
-        //     None => 0,
-        // };
-
         // Draw each database node
-        for (i, database) in self.cluster.databases.iter().enumerate() {
+        for database in self.cluster.databases.iter() {
             if y_position_to_draw > inner_area.y + inner_area.height {
                 break;
             };
 
-            let is_element_focused = i == focused_element;
-            // let is_database_selected = i == selected_database;
-
-            let is_database_selected = match cluster.selected_database {
-                Some(selected_database) => {
-                    if i == selected_database {
-                        true
-                    } else {
-                        false
-                    }
-                }
-                None => false,
-            };
-
-            let content: String = if is_element_focused {
+            let content: String = if database.is_focused {
                 String::from(">>>") + &database.name
             } else {
                 database.name.to_string()
@@ -91,7 +67,7 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
             );
 
             // Draw tables for the current database
-            if is_database_selected {
+            if database.is_connected {
                 for table in database.tables.iter() {
                     y_position_to_draw += 1;
 
@@ -99,7 +75,7 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                         break;
                     };
 
-                    let content: String = if is_element_focused {
+                    let content: String = if database.is_focused {
                         String::from(">>>") + &table.name
                     } else {
                         table.name.to_string()
