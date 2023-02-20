@@ -22,7 +22,7 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
     };
 
     // Fetch data
-    let database_list = &app.database_state.databases;
+    let database_list = &app.cluster.databases;
 
     // Try building the tree
     let border_block = Block::default()
@@ -33,6 +33,6 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
     f.render_stateful_widget(
         DatabaseTree::new(database_list.to_vec()).block(border_block),
         area,
-        &mut app.database_state,
+        &mut app.cluster,
     );
 }

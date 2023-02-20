@@ -30,7 +30,7 @@ pub enum FocusElement {
 
 pub struct App {
     pub connection: Option<Client>,
-    pub database_state: DatabaseCluster,
+    pub cluster: DatabaseCluster,
     pub debug_message: String,
     pub focused_element: FocusElement,
     pub input: String,
@@ -45,7 +45,7 @@ pub struct App {
 impl App {
     pub fn new(title: String) -> App {
         let default_connection_options = PSQLConnectionOptions {
-            user: String::from("postgres"),
+            user: String::from("dfeng"),
             host: String::from("localhost"),
             dbname: None,
         };
@@ -61,7 +61,7 @@ impl App {
             .collect();
 
         App {
-            database_state: DatabaseCluster::new(databases),
+            cluster: DatabaseCluster::new(databases),
             title,
             should_quit: false,
             show_keybinds: true,
@@ -92,8 +92,8 @@ impl App {
                         self.show_keybinds = !self.show_keybinds;
                     }
                     KeyCode::Enter => self.handle_database_select(),
-                    KeyCode::Char('j') => self.database_state.next(),
-                    KeyCode::Char('k') => self.database_state.prev(),
+                    KeyCode::Char('j') => self.cluster.next(),
+                    KeyCode::Char('k') => self.cluster.prev(),
                     _ => {}
                 },
 
@@ -127,14 +127,12 @@ impl App {
     }
 
     fn handle_database_select(&mut self) {
-        self.database_state.toggle_select_focused_element();
+        self.cluster.toggle_select_focused_element();
 
-        match self.database_state.selected_database {
+        match self.cluster.selected_database {
             Some(selected_db_index) => {
-                let selected_database_name: String = self.database_state.databases
-                    [selected_db_index]
-                    .name
-                    .clone();
+                let selected_database_name: String =
+                    self.cluster.databases[selected_db_index].name.clone();
 
                 self.update_connection(selected_database_name)
                     .expect("Could not update connection for newly selected database");
@@ -150,7 +148,7 @@ impl App {
 
             let connection_to_selected_database = PSQLConnectionOptions {
                 host: String::from("localhost"),
-                user: String::from("postgres"),
+                user: String::from("dfeng"),
                 dbname: Some(self.selected_database.clone()),
             };
 
@@ -168,7 +166,7 @@ impl App {
                 table_names.push(name);
             }
 
-            for database in self.database_state.databases.iter_mut() {
+            for database in self.cluster.databases.iter_mut() {
                 if database.name.clone() == database_name {
                     let tables_for_database = table_names
                         .into_iter()

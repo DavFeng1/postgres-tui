@@ -51,10 +51,10 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
             None => 0,
         };
 
-        let selected_database = match cluster.selected_database {
-            Some(db) => db,
-            None => 0,
-        };
+        // let selected_database = match cluster.selected_database {
+        //     Some(db) => db,
+        //     None => 0,
+        // };
 
         // Draw each database node
         for (i, database) in self.cluster.databases.iter().enumerate() {
@@ -63,7 +63,18 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
             };
 
             let is_element_focused = i == focused_element;
-            let is_database_selected = i == selected_database;
+            // let is_database_selected = i == selected_database;
+
+            let is_database_selected = match cluster.selected_database {
+                Some(selected_database) => {
+                    if i == selected_database {
+                        true
+                    } else {
+                        false
+                    }
+                }
+                None => false,
+            };
 
             let content: String = if is_element_focused {
                 String::from(">>>") + &database.name
