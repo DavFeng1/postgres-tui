@@ -26,6 +26,20 @@ impl DatabaseCluster {
             };
 
             if database.is_focused {
+                
+                let mut focused_table = false;
+                for table in database.tables.iter_mut() {
+                    if !table.is_focused {
+                        table.is_focused = true;
+                        focused_table = true;
+                        break;
+                    }
+                }
+
+                if focused_table {
+                    break;
+                }
+
                 database.is_focused = !database.is_focused;
                 is_next = true;
 
