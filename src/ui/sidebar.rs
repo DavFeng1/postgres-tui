@@ -11,14 +11,20 @@ use tui::{
 };
 
 pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
-    // Title
+    let database_name = match app.cluster.current_connected_database {
+        Some(current_connected_database) => app.cluster.databases[current_connected_database]
+            .name
+            .clone(),
+        None => String::from(" "),
+    };
+
     let (render_color, title) = match app.focused_element {
         FocusElement::Sidebar => (
             Color::Green,
-            format!(" Explorer (focused) {}", app.selected_database),
+            format!(" Explorer (focused) {}", database_name),
         ),
 
-        _ => (Color::Red, format!(" Explorer {}", app.selected_database)),
+        _ => (Color::Red, format!(" Explorer {}", database_name)),
     };
 
     // Fetch data

@@ -37,7 +37,6 @@ pub struct App {
     pub focused_element: FocusElement,
     pub input: String,
     pub input_mode: InputMode,
-    pub selected_database: String,
     pub show_keybinds: bool,
     pub should_quit: bool,
     pub title: String,
@@ -70,7 +69,6 @@ impl App {
             debug_message: String::from("test"),
             connection: Some(connection),
             focused_element: FocusElement::Sidebar,
-            selected_database: String::from(""),
         }
     }
 
@@ -142,12 +140,10 @@ impl App {
 
     fn update_connection(&mut self, database_name: String) -> Result<(), Error> {
         {
-            self.selected_database = database_name.clone();
-
             let connection_to_selected_database = PSQLConnectionOptions {
                 host: String::from("localhost"),
                 user: String::from("dfeng"),
-                dbname: Some(self.selected_database.clone()),
+                dbname: Some(database_name.clone()),
             };
 
             let mut connection = connect(connection_to_selected_database).expect("db client");
@@ -165,7 +161,7 @@ impl App {
             }
 
             for database in self.cluster.databases.iter_mut() {
-                if database.name.clone() == database_name {
+                if database.name == database_name {
                     let tables_for_database = table_names
                         .into_iter()
                         .map(|name| DatabaseTable::new(name, Vec::new()))
