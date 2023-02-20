@@ -75,7 +75,7 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                         break;
                     };
 
-                    let content: String = if database.is_focused {
+                    let content: String = if table.is_focused {
                         String::from(">>>") + &table.name
                     } else {
                         table.name.to_string()
