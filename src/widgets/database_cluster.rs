@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use super::database::Database;
 
-// Store the state that the database tree can easily read and render
 #[derive(Debug, Clone, Default)]
 pub struct DatabaseCluster {
     pub databases: Vec<Database>,
@@ -27,14 +26,14 @@ impl DatabaseCluster {
         match self.current_connected_database {
             Some(_current_connected_database) => self.next_table(),
             None => self.next_database(),
-        }
+        };
     }
 
     pub fn prev(&mut self) {
         match self.current_connected_database {
             Some(_current_connected_database) => self.prev_table(),
             None => self.prev_database(),
-        }
+        };
     }
 
     pub fn next_database(&mut self) {
@@ -131,22 +130,33 @@ impl DatabaseCluster {
 
     pub fn toggle_select_focused_element(&mut self) {
         match self.current_focused_database {
-            Some(focused_db_index) => match self.current_connected_database {
-                Some(connected_db_index) => {
-                    if focused_db_index == connected_db_index {
-                        self.databases[connected_db_index].is_connected = false;
-                        self.current_connected_database = None
-                    } else {
-                        self.databases[connected_db_index].is_connected = false;
+            Some(focused_db_index) => {
+                match self.current_connected_database {
+                    Some(connected_db_index) => {
+                        if focused_db_index == connected_db_index {
+                            self.databases[connected_db_index].is_connected = false;
+                            self.current_connected_database = None
+                        } else {
+                            self.databases[connected_db_index].is_connected = false;
+                            self.databases[focused_db_index].is_connected = true;
+                            self.current_connected_database = Some(focused_db_index);
+                        };
+
+                        match self.current_focused_table {
+                            Some(current_focused_table) => {
+                                self.databases[connected_db_index].tables[current_focused_table]
+                                    .is_focused = false;
+                                self.current_focused_table = None;
+                            }
+                            None => (),
+                        }
+                    }
+                    None => {
                         self.databases[focused_db_index].is_connected = true;
                         self.current_connected_database = Some(focused_db_index);
                     }
-                }
-                None => {
-                    self.databases[focused_db_index].is_connected = true;
-                    self.current_connected_database = Some(focused_db_index);
-                }
-            },
+                };
+            }
             None => (),
         }
     }
