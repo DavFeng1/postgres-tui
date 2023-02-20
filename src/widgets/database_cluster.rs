@@ -7,6 +7,8 @@ use super::database::Database;
 pub struct DatabaseCluster {
     pub databases: Vec<Database>,
     pub tables_map: HashMap<String, Vec<String>>,
+    pub current_connected_database: Option<usize>,
+    pub current_focused_database: Option<usize>,
 }
 
 impl DatabaseCluster {
@@ -14,76 +16,69 @@ impl DatabaseCluster {
         Self {
             databases,
             tables_map: HashMap::default(),
+            current_connected_database: None,
+            current_focused_database: None,
         }
     }
 
     pub fn next(&mut self) {
-        let mut is_next = false;
-        for database in self.databases.iter_mut() {
-            if is_next {
-                database.is_focused = true;
-                break;
-            };
-
-            if database.is_focused {
-                
-                let mut focused_table = false;
-                for table in database.tables.iter_mut() {
-                    if !table.is_focused {
-                        table.is_focused = true;
-                        focused_table = true;
-                        break;
-                    }
+        let next_database_index = match self.current_focused_database {
+            Some(focused_db_index) => {
+                self.databases[focused_db_index].is_focused = false;
+                let number_of_databases = self.databases.len();
+                if focused_db_index >= number_of_databases - 1 {
+                    0
+                } else {
+                    focused_db_index + 1
                 }
-
-                if focused_table {
-                    break;
-                }
-
-                database.is_focused = !database.is_focused;
-                is_next = true;
-
-                continue;
-            };
-        }
-
-        if !is_next {
-            match self.databases.first_mut() {
-                Some(first_database) => first_database.is_focused = true,
-                None => {}
             }
-        }
+            None => 0,
+        };
+
+        self.current_focused_database = Some(next_database_index);
+        self.databases[next_database_index].is_focused = true;
     }
 
     pub fn prev(&mut self) {
-        let mut is_prev = false;
-        for database in self.databases.iter_mut().rev() {
-            if is_prev {
-                database.is_focused = true;
-
-                break;
-            };
-
-            if database.is_focused {
-                database.is_focused = !database.is_focused;
-                is_prev = true;
-            };
-        }
-
-        if !is_prev {
-            match self.databases.last_mut() {
-                Some(last_database) => last_database.is_focused = true,
-                None => {}
+        let prev_database_index = match self.current_focused_database {
+            Some(focused_db_index) => {
+                self.databases[focused_db_index].is_focused = false;
+                let number_of_databases = self.databases.len();
+                if focused_db_index <= 0 {
+                    number_of_databases - 1
+                } else {
+                    focused_db_index - 1
+                }
             }
-        }
+            None => 0,
+        };
+
+        self.current_focused_database = Some(prev_database_index);
+        self.databases[prev_database_index].is_focused = true;
     }
 
     pub fn toggle_select_focused_element(&mut self) {
-        for database in self.databases.iter_mut() {
-            if database.is_focused {
-                database.is_connected = !database.is_connected;
-                break;
+        match self.current_focused_database {
+            Some(focused_db_index) => {
+                match self.current_connected_database {
+                    Some(connected_db_index) => {
+                        if focused_db_index == connected_db_index {
+                            self.databases[connected_db_index].is_connected = false;
+                            self.current_connected_database = None
+                        } else {
+                            self.databases[connected_db_index].is_connected = false;
+                            self.databases[focused_db_index].is_connected = true;
+                            self.current_connected_database = Some(focused_db_index);
+                        }
+                    },
+                    None => {
+                        self.databases[focused_db_index].is_connected = true;
+                        self.current_connected_database = Some(focused_db_index);
+                    },
+                }
             }
+            None => (),
         }
     }
 }
+
