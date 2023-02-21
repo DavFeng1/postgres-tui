@@ -154,11 +154,9 @@ impl App {
                 )
                 .expect("Could not get tables for database");
 
-            let mut table_names = vec![];
-            for row in result {
-                let name: String = row.get(0);
-                table_names.push(name);
-            }
+            let mut table_names: Vec<String> = result.iter().map(|row| row.get(0)).collect();
+
+            table_names.sort();
 
             for database in self.cluster.databases.iter_mut() {
                 if database.name == database_name {
