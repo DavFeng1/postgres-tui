@@ -1,7 +1,7 @@
 use tui::{
     buffer::Buffer,
     layout::Rect,
-    style::Style,
+    style::{Style, Color},
     widgets::{Block, StatefulWidget, Widget},
 };
 use std::cmp::{min, max};
@@ -33,6 +33,7 @@ struct BufferLine {
     y: u16,
     content: String,
     width: usize,
+    style: Style,
 }
 
 impl<'a> StatefulWidget for DatabaseTree<'a> {
@@ -71,8 +72,12 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
         let mut current_focused_index_position: usize = 0;
 
         for (i, database) in self.cluster.databases.iter().enumerate() {
+
+            let style = Style::default();
+
             let content: String = if database.is_focused {
                 current_focused_index_position = i;
+                style.bg(Color::Blue);
                 String::from(">>>") + &database.name
             } else {
                 database.name.to_string()
@@ -83,14 +88,18 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                 y,
                 content,
                 width: inner_area.width as usize,
+                style,
             });
 
             if database.is_connected {
                 for (j, table) in database.tables.iter().enumerate() {
                     y += 1;
 
+                    let style = Style::default();
+
                     let content: String = if table.is_focused {
                         current_focused_index_position = i + j + 1;
+                        style.bg(Color::Cyan);
                         String::from(">>>") + &table.name
                     } else {
                         table.name.to_string()
@@ -101,6 +110,7 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                         y,
                         content,
                         width: inner_area.width as usize,
+                        style,
                     });
                 }
             }
@@ -119,13 +129,13 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
             let offset_lines = &lines_to_draw[start_of_slice..end_of_slice];
 
             for line in offset_lines {
-                buf.set_stringn(line.x, line.y - offset as u16, &line.content, line.width, Style::default());
+                buf.set_stringn(line.x, line.y - offset as u16, &line.content, line.width, line.style);
             };
         } else {
             let end_of_slice = min(total_lines, height_of_tree);
             let offset_lines = &lines_to_draw[0..end_of_slice];
             for line in offset_lines {
-                buf.set_stringn(line.x, line.y, &line.content, line.width, Style::default());
+                buf.set_stringn(line.x, line.y, &line.content, line.width, line.style);
             };
         }
 
