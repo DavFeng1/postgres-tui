@@ -41,7 +41,7 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
     // Implement the rendering logic of the database tree.
     //
     // Iterate over all databases and expand tables for the currently
-    // connected database.
+    // connected database (database.is_connected).
     //
     // Calculate the offset for scrolling when # of lines > height_of_tree
     //
