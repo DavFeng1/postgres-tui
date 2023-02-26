@@ -53,10 +53,12 @@ impl App {
 
         let mut connection = connect(default_connection_options).expect("Postgres client");
 
-        let databases = get_databases(&mut connection)
+        let mut databases: Vec<Database> = get_databases(&mut connection)
             .into_iter()
             .map(|row| Database::new(row.get(0), Vec::new()))
             .collect();
+
+        databases.sort_by(|a, b| a.name.cmp(&b.name));
 
         App {
             cluster: DatabaseCluster::new(databases),
