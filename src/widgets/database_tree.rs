@@ -74,14 +74,14 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
         let mut current_focused_index_position: usize = 0;
 
         for (i, database) in self.cluster.databases.iter().enumerate() {
-            let mut style = Style::default();
-
-            let content: String = if database.is_focused {
+            let (style, content): (Style, String) = if database.is_focused {
                 current_focused_index_position = i;
-                style = style.bg(Color::Blue);
-                String::from(">>>") + &database.name
+                (
+                    Style::default().bg(Color::Blue),
+                    String::from(">>>") + &database.name,
+                )
             } else {
-                database.name.to_string()
+                (Style::default(), database.name.to_string())
             };
 
             lines_to_draw.push(BufferLine {
@@ -96,14 +96,14 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                 for (j, table) in database.tables.iter().enumerate() {
                     y += 1;
 
-                    let mut style = Style::default();
-
-                    let content: String = if table.is_focused {
+                    let (style, content): (Style, String) = if table.is_focused {
                         current_focused_index_position = i + j + 1;
-                        style = style.bg(Color::Blue);
-                        String::from(">>>") + &table.name
+                        (
+                            Style::default().bg(Color::Blue),
+                            String::from(">>>") + &table.name,
+                        )
                     } else {
-                        table.name.to_string()
+                        (Style::default(), table.name.to_string())
                     };
 
                     lines_to_draw.push(BufferLine {
