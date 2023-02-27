@@ -73,9 +73,9 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
         let mut lines_to_draw: Vec<BufferLine> = Vec::new();
         let mut current_focused_index_position: usize = 0;
 
-        for (i, database) in self.cluster.databases.iter().enumerate() {
+        for database in self.cluster.databases.iter() {
             let (style, content): (Style, String) = if database.is_focused {
-                current_focused_index_position = i;
+                current_focused_index_position = (y - inner_area.y) as usize;
                 (
                     Style::default().bg(Color::Blue),
                     String::from(">>>") + &database.name,
@@ -93,11 +93,11 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
             });
 
             if database.is_connected {
-                for (j, table) in database.tables.iter().enumerate() {
+                for table in database.tables.iter() {
                     y += 1;
 
                     let (style, content): (Style, String) = if table.is_focused {
-                        current_focused_index_position = i + j + 1;
+                        current_focused_index_position = (y - inner_area.y) as usize;
                         (
                             Style::default().bg(Color::Blue),
                             String::from(">>>") + &table.name,
