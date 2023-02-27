@@ -19,7 +19,7 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
     };
 
     let (render_color, title) = match app.focused_element {
-        FocusElement::Sidebar => (
+        FocusElement::Explorer => (
             Color::Green,
             format!(" Explorer (focused) {}", database_name),
         ),

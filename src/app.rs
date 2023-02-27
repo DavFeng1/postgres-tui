@@ -23,7 +23,7 @@ pub struct PSQLConnectionOptions {
 
 #[derive(PartialEq, Eq)]
 pub enum FocusElement {
-    Sidebar,
+    Explorer,
     Main,
     SearchBar,
 }
@@ -70,20 +70,32 @@ impl App {
             input_history: Vec::new(),
             debug_message: String::from("test"),
             connection: Some(connection),
-            focused_element: FocusElement::Sidebar,
+            focused_element: FocusElement::Explorer,
         }
     }
 
     // Register keybinds each time the app is updated.
     // Keybinds react to state and the current focused element
     //
-    // TODO: Top level keybind matching should correspond to
-    // the currently focused component
+    // Precedence order
+    // 1) Input mode
+    // 2) Focused Element
     //
     pub fn register_keybinds(&mut self) -> io::Result<()> {
         if let Event::Key(key) = event::read()? {
             match self.input_mode {
-                InputMode::Normal => self.register_normal_mode_keybinds(key),
+                InputMode::Normal => match key.code {
+                    KeyCode::Char('1') => self.focused_element = FocusElement::Explorer,
+                    KeyCode::Char('2') => self.focused_element = FocusElement::SearchBar,
+                    KeyCode::Char('3') => self.focused_element = FocusElement::Main,
+                    KeyCode::Char('q') => self.should_quit = true,
+                    KeyCode::Char('b') => self.show_keybinds = !self.show_keybinds,
+                    _ => match self.focused_element {
+                        FocusElement::Explorer => self.register_explorer_keybinds(key),
+                        FocusElement::Main => self.register_main_keybinds(key),
+                        FocusElement::SearchBar => self.register_searchbar_keybinds(key),
+                    },
+                },
                 InputMode::Editing => self.register_edit_mode_keybinds(key),
             }
         }
@@ -91,20 +103,26 @@ impl App {
         Ok(())
     }
 
-    fn register_normal_mode_keybinds(&mut self, key: KeyEvent) {
+    fn register_edit_mode_keybinds(&mut self, key: KeyEvent) {
         match key.code {
-            KeyCode::Char('1') => self.focused_element = FocusElement::Sidebar,
-            KeyCode::Char('2') => self.focused_element = FocusElement::SearchBar,
-            KeyCode::Char('3') => self.focused_element = FocusElement::Main,
-            KeyCode::Char('i') => {
-                self.input_mode = InputMode::Editing;
+            KeyCode::Enter => {
+                self.input_history.push(self.input.drain(..).collect());
             }
-            KeyCode::Char('q') => {
-                self.should_quit = true;
+            KeyCode::Char(c) => {
+                self.input.push(c);
             }
-            KeyCode::Char('b') => {
-                self.show_keybinds = !self.show_keybinds;
+            KeyCode::Backspace => {
+                self.input.pop();
             }
+            KeyCode::Esc => {
+                self.input_mode = InputMode::Normal;
+            }
+            _ => {}
+        }
+    }
+
+    fn register_explorer_keybinds(&mut self, key: KeyEvent) {
+        match key.code {
             KeyCode::Enter => self.handle_database_toggle(),
             KeyCode::Char('j') => self.cluster.next(),
             KeyCode::Char('k') => self.cluster.prev(),
@@ -112,29 +130,19 @@ impl App {
         }
     }
 
-    fn register_edit_mode_keybinds(&mut self, key: KeyEvent) {
-        match self.focused_element {
-            FocusElement::SearchBar => match key.code {
-                KeyCode::Enter => {
-                    self.input_history.push(self.input.drain(..).collect());
-                }
-                KeyCode::Char(c) => {
-                    self.input.push(c);
-                }
-                KeyCode::Backspace => {
-                    self.input.pop();
-                }
-                KeyCode::Esc => {
-                    self.input_mode = InputMode::Normal;
-                }
-                _ => {}
-            },
-            _ => match key.code {
-                KeyCode::Esc => {
-                    self.input_mode = InputMode::Normal;
-                }
-                _ => {}
-            },
+    fn register_main_keybinds(&mut self, key: KeyEvent) {
+        match key.code {
+            _ => {}
+        }
+    }
+
+    fn register_searchbar_keybinds(&mut self, key: KeyEvent) {
+        match key.code {
+            KeyCode::Char('i') => self.input_mode = InputMode::Editing,
+            KeyCode::Esc => {
+                self.input_mode = InputMode::Normal;
+            }
+            _ => {}
         }
     }
 
