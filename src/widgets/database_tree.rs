@@ -1,11 +1,11 @@
+use super::{database::Database, database_cluster::DatabaseCluster};
+use std::cmp::{max, min};
 use tui::{
     buffer::Buffer,
     layout::Rect,
-    style::{Style, Color},
+    style::{Color, Style},
     widgets::{Block, StatefulWidget, Widget},
 };
-use std::cmp::{min, max};
-use super::{database::Database, database_cluster::DatabaseCluster};
 
 #[derive(Debug, Clone)]
 pub struct DatabaseTree<'a> {
@@ -55,6 +55,8 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
     //    [2, 3, 4]              lines_to_draw[start_of_slice...end_of_slice]
     //
     //
+    // TODO: refactor this so that we render in one iteration
+    //
     fn render(mut self, area: Rect, buf: &mut Buffer, _cluster: &mut DatabaseCluster) {
         let inner_area = match self.block.take() {
             Some(b) => {
@@ -72,12 +74,11 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
         let mut current_focused_index_position: usize = 0;
 
         for (i, database) in self.cluster.databases.iter().enumerate() {
-
-            let style = Style::default();
+            let mut style = Style::default();
 
             let content: String = if database.is_focused {
                 current_focused_index_position = i;
-                style.bg(Color::Blue);
+                style = style.bg(Color::Blue);
                 String::from(">>>") + &database.name
             } else {
                 database.name.to_string()
@@ -95,11 +96,11 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                 for (j, table) in database.tables.iter().enumerate() {
                     y += 1;
 
-                    let style = Style::default();
+                    let mut style = Style::default();
 
                     let content: String = if table.is_focused {
                         current_focused_index_position = i + j + 1;
-                        style.bg(Color::Cyan);
+                        style = style.bg(Color::Blue);
                         String::from(">>>") + &table.name
                     } else {
                         table.name.to_string()
@@ -129,15 +130,20 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
             let offset_lines = &lines_to_draw[start_of_slice..end_of_slice];
 
             for line in offset_lines {
-                buf.set_stringn(line.x, line.y - offset as u16, &line.content, line.width, line.style);
-            };
+                buf.set_stringn(
+                    line.x,
+                    line.y - offset as u16,
+                    &line.content,
+                    line.width,
+                    line.style,
+                );
+            }
         } else {
             let end_of_slice = min(total_lines, height_of_tree);
             let offset_lines = &lines_to_draw[0..end_of_slice];
             for line in offset_lines {
                 buf.set_stringn(line.x, line.y, &line.content, line.width, line.style);
-            };
+            }
         }
-
     }
 }
