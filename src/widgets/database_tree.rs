@@ -7,7 +7,6 @@ use tui::{
     widgets::{Block, StatefulWidget, Widget},
 };
 
-#[derive(Debug, Clone)]
 pub struct DatabaseTree<'a> {
     block: Option<Block<'a>>,
     cluster: DatabaseCluster,
@@ -126,7 +125,7 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
         if total_lines > height_of_tree && y_current > radius_of_tree {
             let offset = y_current - radius_of_tree;
             let start_of_slice = max(0, offset);
-            let end_of_slice = min(total_lines, height_of_tree + offset);
+            let end_of_slice = min(total_lines, height_of_tree + offset + 1);
             let offset_lines = &lines_to_draw[start_of_slice..end_of_slice];
 
             for line in offset_lines {
@@ -139,7 +138,7 @@ impl<'a> StatefulWidget for DatabaseTree<'a> {
                 );
             }
         } else {
-            let end_of_slice = min(total_lines, height_of_tree);
+            let end_of_slice = min(total_lines, height_of_tree + 1);
             let offset_lines = &lines_to_draw[0..end_of_slice];
             for line in offset_lines {
                 buf.set_stringn(line.x, line.y, &line.content, line.width, line.style);

@@ -91,8 +91,8 @@ impl App {
                     KeyCode::Char('q') => self.should_quit = true,
                     KeyCode::Char('b') => self.show_keybinds = !self.show_keybinds,
                     _ => match self.focused_element {
-                        FocusElement::Explorer => self.register_explorer_keybinds(key),
                         FocusElement::Main => self.register_main_keybinds(key),
+                        FocusElement::Explorer => self.register_explorer_keybinds(key),
                         FocusElement::SearchBar => self.register_searchbar_keybinds(key),
                     },
                 },
@@ -123,9 +123,10 @@ impl App {
 
     fn register_explorer_keybinds(&mut self, key: KeyEvent) {
         match key.code {
-            KeyCode::Enter => self.handle_database_toggle(),
+            KeyCode::Enter => self.handle_select(),
             KeyCode::Char('j') => self.cluster.next(),
             KeyCode::Char('k') => self.cluster.prev(),
+            KeyCode::Char('o') => self.open_table(),
             _ => {}
         }
     }
@@ -146,7 +147,11 @@ impl App {
         }
     }
 
-    fn handle_database_toggle(&mut self) {
+    fn open_table(&mut self) {
+        print!("OPen sesame");
+    }
+
+    fn handle_select(&mut self) {
         self.cluster.toggle_select_focused_element();
 
         for database in self.cluster.databases.iter_mut() {

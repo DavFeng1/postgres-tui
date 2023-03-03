@@ -2,13 +2,19 @@ use std::collections::HashMap;
 
 use super::database::Database;
 
-#[derive(Debug, Clone, Default)]
+pub enum TreeElement {
+    Database,
+    Table,
+}
+
 pub struct DatabaseCluster {
     pub databases: Vec<Database>,
     pub tables_map: HashMap<String, Vec<String>>,
     pub current_connected_database: Option<usize>,
+    pub current_selected_table: Option<usize>,
     pub current_focused_database: Option<usize>,
     pub current_focused_table: Option<usize>,
+    pub current_focused_element: Option<TreeElement>,
 }
 
 impl DatabaseCluster {
@@ -17,8 +23,10 @@ impl DatabaseCluster {
             databases,
             tables_map: HashMap::default(),
             current_connected_database: None,
+            current_selected_table: None,
             current_focused_database: None,
             current_focused_table: None,
+            current_focused_element: None,
         }
     }
 
