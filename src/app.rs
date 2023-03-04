@@ -37,6 +37,7 @@ pub struct App {
     pub focused_element: FocusElement,
     pub input: String,
     pub input_mode: InputMode,
+    pub show_debug: bool,
     pub show_keybinds: bool,
     pub should_quit: bool,
     pub title: String,
@@ -62,15 +63,16 @@ impl App {
 
         App {
             cluster: DatabaseCluster::new(databases),
-            title,
-            should_quit: false,
-            show_keybinds: true,
+            connection: Some(connection),
+            debug_message: String::from("test"),
+            focused_element: FocusElement::Explorer,
             input: String::new(),
             input_mode: InputMode::Normal,
             input_history: Vec::new(),
-            debug_message: String::from("test"),
-            connection: Some(connection),
-            focused_element: FocusElement::Explorer,
+            should_quit: false,
+            show_debug: false,
+            show_keybinds: true,
+            title,
         }
     }
 
@@ -90,6 +92,7 @@ impl App {
                     KeyCode::Char('3') => self.focused_element = FocusElement::Main,
                     KeyCode::Char('q') => self.should_quit = true,
                     KeyCode::Char('b') => self.show_keybinds = !self.show_keybinds,
+                    KeyCode::Char('d') => self.show_debug = !self.show_debug,
                     _ => match self.focused_element {
                         FocusElement::Main => self.register_main_keybinds(key),
                         FocusElement::Explorer => self.register_explorer_keybinds(key),
@@ -148,18 +151,22 @@ impl App {
     }
 
     fn open_table(&mut self) {
-        print!("OPen sesame");
+        self.debug_message = String::from("Open sesame");
+        self.show_debug = true;
     }
 
     fn handle_select(&mut self) {
+
         self.cluster.toggle_select_focused_element();
 
         for database in self.cluster.databases.iter_mut() {
             if database.is_connected {
                 let database_name = database.name.clone();
 
+
                 self.update_connection(database_name)
                     .expect("Could not update connecion for newly selected database");
+
 
                 break;
             }
@@ -175,33 +182,48 @@ impl App {
             };
 
             let mut connection = connect(connection_to_selected_database).expect("db client");
-            let result = connection
-                .query(
-                    "SELECT tablename FROM pg_tables where schemaname = 'public'",
-                    &[],
-                )
-                .expect("Could not get tables for database");
+            let result = connection.query(
+                "SaELECT tablename FROM pg_tables where schemaname = 'public'",
+                &[],
+            );
 
-            let mut table_names: Vec<String> = result.iter().map(|row| row.get(0)).collect();
-
-            table_names.sort();
-
-            for database in self.cluster.databases.iter_mut() {
-                if database.name == database_name {
-                    let tables_for_database = table_names
-                        .into_iter()
-                        .map(|name| DatabaseTable::new(name, Vec::new()))
-                        .collect();
-
-                    database.tables = tables_for_database;
-
-                    break;
+            let rows = match result {
+                Ok(t) => t,
+                Err(error) => {
+                    self.cluster.toggle_select_focused_element();
+                    let message = format!("Problem getting table names: {error}");
+                    self.show_debug_message(message);
+                    Vec::new()
                 }
-            }
+            };
 
-            self.connection = Some(connection);
+            if !rows.is_empty() {
+                let mut table_names: Vec<String> = rows.iter().map(|row| row.get(0)).collect();
+
+                table_names.sort();
+
+                for database in self.cluster.databases.iter_mut() {
+                    if database.name == database_name {
+                        let tables_for_database = table_names
+                            .into_iter()
+                            .map(|name| DatabaseTable::new(name, Vec::new()))
+                            .collect();
+
+                        database.tables = tables_for_database;
+
+                        break;
+                    }
+                }
+
+                self.connection = Some(connection);
+            }
 
             Ok(())
         }
+    }
+
+    fn show_debug_message(&mut self, message: String) {
+        self.debug_message = message;
+        self.show_debug = true;
     }
 }

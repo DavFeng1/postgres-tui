@@ -9,42 +9,32 @@ use tui::{
 
 use crate::ui::Component;
 
-pub struct KeybindsPopup {
+pub struct DebugPopup {
     percent_x: u16,
     percent_y: u16,
+    message: String,
 }
 
-impl KeybindsPopup {
-    pub fn new(percent_x: u16, percent_y: u16) -> KeybindsPopup {
-        KeybindsPopup {
+impl DebugPopup {
+    pub fn new(percent_x: u16, percent_y: u16, message: String) -> DebugPopup {
+        DebugPopup {
             percent_x,
             percent_y,
+            message,
         }
     }
 }
 
-impl Component for KeybindsPopup {
+impl Component for DebugPopup {
     fn render(&self, f: &mut Frame<CrosstermBackend<Stdout>>) {
         let size = f.size();
 
         let block = Block::default().borders(Borders::ALL).title("Keybinds");
 
-        let input = Paragraph::new(
-            "
-            1: Focus Side Bar
-            2: Focus Main View
-            3: Focus Search
-            j: Move down
-            k: Move up
-            i: In Normal Mode => Edit Mode
-            esc: In Edit Mode => Normal Mode
-            b: Show Binds
-            d: Show debug window
-            q: quit",
-        )
-        .style(Style::default().fg(Color::Yellow))
-        .alignment(Alignment::Left)
-        .block(block);
+        let input = Paragraph::new(self.message.clone())
+            .style(Style::default().fg(Color::Yellow))
+            .alignment(Alignment::Left)
+            .block(block);
 
         let vertical_layout = Layout::default()
             .direction(Direction::Vertical)

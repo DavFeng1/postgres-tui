@@ -1,4 +1,5 @@
 pub mod datatable;
+pub mod debug;
 pub mod popup;
 pub mod searchbar;
 pub mod sidebar;
@@ -53,6 +54,11 @@ pub fn draw(f: &mut Frame<CrosstermBackend<io::Stdout>>, app: &mut App) {
 
     if app.show_keybinds {
         let p = popup::KeybindsPopup::new(60, 40);
+        p.render(f);
+    }
+
+    if app.show_debug {
+        let p = debug::DebugPopup::new(60, 40, app.debug_message.clone());
         p.render(f);
     }
 }
