@@ -1,0 +1,81 @@
+use postgres::{Client, Error, NoTls, Row};
+
+use crate::app::PSQLConnectionOptions;
+
+pub struct ConnectionManager {
+    client: Client,
+    connection_options: PSQLConnectionOptions,
+}
+
+
+impl ConnectionManager {
+    pub fn new(connection_options: PSQLConnectionOptions) -> Result<ConnectionManager, Error> {
+        let client_result = Client::connect(
+            format!(
+                "host={} user={}",
+                connection_options.host, connection_options.user,
+            )
+            .as_str(),
+            NoTls,
+        );
+
+        match client_result {
+            Ok(client) => Ok(
+                ConnectionManager {
+                    client,
+                    connection_options
+                }
+            ),
+            Err(err) =>  return Err(err)
+        }
+
+    }
+
+    pub fn get_databases(&mut self) -> Vec<Row> {
+        self.client
+            .query(
+                "SELECT datname from pg_database WHERE datistemplate = false",
+                &[],
+            )
+            .expect("Get databases")
+    }
+
+    pub fn get_tables_for_database(&mut self, database_name: String) -> Result<Vec<Row>, Error> {
+
+        self.client.query(
+            "SELECT tablename FROM pg_tables where schemaname = 'public'",
+            &[],
+        )
+    }
+
+    pub fn create_database_connection(&mut self, connection_options: PSQLConnectionOptions) -> Result<(), Error> {
+        let client_result = match &connection_options.dbname {
+            Some(dbname) => Client::connect(
+                format!(
+                    "host={} user={} dbname={}",
+                    &connection_options.host, &connection_options.user, dbname
+                )
+                .as_str(),
+                NoTls,
+            ),
+            None => Client::connect(
+                format!(
+                    "host={} user={}",
+                    &connection_options.host, &connection_options.user,
+                )
+                .as_str(),
+                NoTls,
+            )
+        };
+
+        match client_result {
+            Ok(client) => {
+                self.client = client;
+                self.connection_options = connection_options;
+                Ok(())
+            },
+            Err(err) => Err(err)
+        }
+    }
+}
+

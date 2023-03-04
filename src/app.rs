@@ -1,9 +1,8 @@
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
-use postgres::{Client, Error};
-use std::io;
+use std::{io, fmt::Display};
 
 use crate::{
-    postgres::{connect, query::get_databases},
+    postgres::connection_manager::ConnectionManager,
     widgets::{
         database::Database, database_cluster::DatabaseCluster, database_table::DatabaseTable,
     },
@@ -21,6 +20,7 @@ pub struct PSQLConnectionOptions {
     pub dbname: Option<String>,
 }
 
+
 #[derive(PartialEq, Eq)]
 pub enum FocusElement {
     Explorer,
@@ -31,7 +31,7 @@ pub enum FocusElement {
 // App should store state which are separate from widgets.
 // Widgets should read the state and determin what to render.
 pub struct App {
-    pub connection: Option<Client>,
+    pub connection_manager: ConnectionManager,
     pub cluster: DatabaseCluster,
     pub debug_message: String,
     pub focused_element: FocusElement,
@@ -52,9 +52,11 @@ impl App {
             dbname: None,
         };
 
-        let mut connection = connect(default_connection_options).expect("Postgres client");
+        let connection_manager_result = ConnectionManager::new(default_connection_options);
 
-        let mut databases: Vec<Database> = get_databases(&mut connection)
+        let mut connection_manager = connection_manager_result.unwrap();
+
+        let mut databases: Vec<Database> = connection_manager.get_databases()
             .into_iter()
             .map(|row| Database::new(row.get(0), Vec::new()))
             .collect();
@@ -63,7 +65,7 @@ impl App {
 
         App {
             cluster: DatabaseCluster::new(databases),
-            connection: Some(connection),
+            connection_manager,
             debug_message: String::from("test"),
             focused_element: FocusElement::Explorer,
             input: String::new(),
@@ -156,74 +158,59 @@ impl App {
     }
 
     fn handle_select(&mut self) {
-
         self.cluster.toggle_select_focused_element();
 
         for database in self.cluster.databases.iter_mut() {
             if database.is_connected {
                 let database_name = database.name.clone();
-
-
-                self.update_connection(database_name)
-                    .expect("Could not update connecion for newly selected database");
-
+                self.update_connection(&database_name);
 
                 break;
             }
         }
     }
 
-    fn update_connection(&mut self, database_name: String) -> Result<(), Error> {
-        {
-            let connection_to_selected_database = PSQLConnectionOptions {
-                host: String::from("localhost"),
-                user: String::from("dfeng"),
-                dbname: Some(database_name.clone()),
-            };
+    fn update_connection(&mut self, database_name: &String) {
+        let connection_options_for_databse = PSQLConnectionOptions {
+            host: String::from("localhost"),
+            user: String::from("dfeng"),
+            dbname: Some(database_name.clone()),
+        };
 
-            let mut connection = connect(connection_to_selected_database).expect("db client");
-            let result = connection.query(
-                "SaELECT tablename FROM pg_tables where schemaname = 'public'",
-                &[],
-            );
 
-            let rows = match result {
-                Ok(t) => t,
-                Err(error) => {
-                    self.cluster.toggle_select_focused_element();
-                    let message = format!("Problem getting table names: {error}");
-                    self.show_debug_message(message);
-                    Vec::new()
-                }
-            };
+        let create_connection_result = self.connection_manager.create_database_connection(connection_options_for_databse);
+        self.handle_error_with_debug(create_connection_result);
 
-            if !rows.is_empty() {
-                let mut table_names: Vec<String> = rows.iter().map(|row| row.get(0)).collect();
+        let result = self.connection_manager.get_tables_for_database(database_name.clone());
 
-                table_names.sort();
+        let rows = self.handle_error_with_debug(result).unwrap_or_default();
 
-                for database in self.cluster.databases.iter_mut() {
-                    if database.name == database_name {
-                        let tables_for_database = table_names
-                            .into_iter()
-                            .map(|name| DatabaseTable::new(name, Vec::new()))
-                            .collect();
+        let mut table_names: Vec<String> = rows.iter().map(|row| row.get(0)).collect();
+        table_names.sort();
 
-                        database.tables = tables_for_database;
+        for database in self.cluster.databases.iter_mut() {
+            if database.name == database_name.clone() {
+                let tables_for_database = table_names
+                    .into_iter()
+                    .map(|name| DatabaseTable::new(name, Vec::new()))
+                    .collect();
 
-                        break;
-                    }
-                }
+                database.tables = tables_for_database;
 
-                self.connection = Some(connection);
+                break;
             }
-
-            Ok(())
         }
     }
 
-    fn show_debug_message(&mut self, message: String) {
-        self.debug_message = message;
-        self.show_debug = true;
+    fn handle_error_with_debug<T, E: Display>(&mut self, result: Result<T, E>) -> Option<T> {
+        match result {
+            Ok(result) => Some(result),
+            Err(error) => {
+                let error_message = format!("Error encountered: {error}");
+                self.debug_message = error_message;
+                self.show_debug = true;
+                None
+            }
+        }
     }
 }
