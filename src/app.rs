@@ -153,7 +153,6 @@ impl App {
     }
 
     fn open_table(&mut self) {
-        let current_selected_table = self.cluster.current_selected_table;
         let current_connected_database = match self.cluster.current_connected_database {
             Some(current_db) => current_db,
             None => {
