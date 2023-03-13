@@ -153,8 +153,38 @@ impl App {
     }
 
     fn open_table(&mut self) {
-        self.debug_message = String::from("Open sesame");
-        self.show_debug = true;
+        let current_selected_table = self.cluster.current_selected_table;
+        let current_connected_database = match self.cluster.current_connected_database {
+            Some(current_db) => current_db,
+            None => {
+                self.show_debug_message(String::from("No connected db"));
+
+                return ()
+            }
+        };
+
+        let current_database = &self.cluster.databases[current_connected_database];
+
+        let current_table_index = match self.cluster.current_focused_table {
+            Some(current_table) => current_table,
+            None => {
+                self.show_debug_message(String::from("No table hovered"));
+
+                return ()
+            }
+        };
+
+        let current_table = &current_database.tables[current_table_index];
+
+        let table_data = self.connection_manager.get_table(current_table.name.clone());
+
+        match table_data {
+            Ok(column_names) => {
+                let names: Vec<String> = column_names.iter().map(|row| row.get(0)).collect();
+                self.show_debug_message(names.join(","));
+            },
+            Err(error) => self.show_debug_message(format!("Got an error: {}", error))
+        }
     }
 
     fn handle_select(&mut self) {
@@ -177,11 +207,11 @@ impl App {
             dbname: Some(database_name.clone()),
         };
 
-
         let create_connection_result = self.connection_manager.create_database_connection(connection_options_for_databse);
+
         self.handle_error_with_debug(create_connection_result);
 
-        let result = self.connection_manager.get_tables_for_database(database_name.clone());
+        let result = self.connection_manager.get_tables_for_database();
 
         let rows = self.handle_error_with_debug(result).unwrap_or_default();
 
@@ -200,6 +230,11 @@ impl App {
                 break;
             }
         }
+    }
+
+    fn show_debug_message(&mut self, message: String) {
+        self.debug_message = message;
+        self.show_debug = true;
     }
 
     fn handle_error_with_debug<T, E: Display>(&mut self, result: Result<T, E>) -> Option<T> {

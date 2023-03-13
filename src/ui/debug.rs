@@ -29,7 +29,7 @@ impl Component for DebugPopup {
     fn render(&self, f: &mut Frame<CrosstermBackend<Stdout>>) {
         let size = f.size();
 
-        let block = Block::default().borders(Borders::ALL).title("Keybinds");
+        let block = Block::default().borders(Borders::ALL).title("Debug");
 
         let input = Paragraph::new(self.message.clone())
             .style(Style::default().fg(Color::Yellow))

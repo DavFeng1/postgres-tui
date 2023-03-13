@@ -40,8 +40,7 @@ impl ConnectionManager {
             .expect("Get databases")
     }
 
-    pub fn get_tables_for_database(&mut self, database_name: String) -> Result<Vec<Row>, Error> {
-
+    pub fn get_tables_for_database(&mut self) -> Result<Vec<Row>, Error> {
         self.client.query(
             "SELECT tablename FROM pg_tables where schemaname = 'public'",
             &[],
@@ -76,6 +75,11 @@ impl ConnectionManager {
             },
             Err(err) => Err(err)
         }
+    }
+
+    pub fn get_table(&mut self, table_name: String) -> Result<Vec<Row>, Error> {
+        let query = format!("SELECT column_name FROM information_schema.columns where table_name = {}", table_name);
+        self.client.query(&query, &[])
     }
 }
 
