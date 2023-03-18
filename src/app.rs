@@ -128,7 +128,7 @@ impl App {
 
     fn register_explorer_keybinds(&mut self, key: KeyEvent) {
         match key.code {
-            KeyCode::Enter => self.handle_select(),
+            KeyCode::Enter => self.select_database(),
             KeyCode::Char('j') => self.cluster.next(),
             KeyCode::Char('k') => self.cluster.prev(),
             KeyCode::Char('o') => self.open_table(),
@@ -153,42 +153,25 @@ impl App {
     }
 
     fn open_table(&mut self) {
-        let current_connected_database = match self.cluster.current_connected_database {
-            Some(current_db) => current_db,
-            None => {
-                self.show_debug_message(String::from("No connected db"));
+        match self.cluster.select_focused_table() {
+            Some(current_table) => {
+                let table_data = self.connection_manager.get_table(current_table.name.clone());
+                match table_data {
+                    Ok(column_names) => {
+                        let names: Vec<String> = column_names.iter().map(|row| row.get(0)).collect();
+                        current_table.set_columns(names.clone());
 
-                return ()
-            }
-        };
-
-        let current_database = &mut self.cluster.databases[current_connected_database];
-
-        let current_table_index = match self.cluster.current_focused_table {
-            Some(current_table) => current_table,
-            None => {
-                self.show_debug_message(String::from("No table hovered"));
-
-                return ()
-            }
-        };
-
-        self.cluster.current_selected_table = Some(current_table_index);
-        let current_table = &mut current_database.tables[current_table_index];
-        let table_data = self.connection_manager.get_table(current_table.name.clone());
-
-        match table_data {
-            Ok(column_names) => {
-                let names: Vec<String> = column_names.iter().map(|row| row.get(0)).collect();
-                current_table.set_columns(names.clone());
-
-           },
-            Err(error) => self.show_debug_message(format!("Got an error: {}", error))
+                   },
+                    Err(error) => self.show_debug_message(format!("Got an error: {}", error))
+                }
+            },
+            None => ()
         }
+
     }
 
-    fn handle_select(&mut self) {
-        self.cluster.toggle_select_focused_element();
+    fn select_database(&mut self) {
+        self.cluster.toggle_focused_database();
 
         for database in self.cluster.databases.iter_mut() {
             if database.is_connected {
@@ -210,9 +193,7 @@ impl App {
         let create_connection_result = self.connection_manager.create_database_connection(connection_options_for_databse);
 
         self.handle_error_with_debug(create_connection_result);
-
         let result = self.connection_manager.get_tables_for_database();
-
         let rows = self.handle_error_with_debug(result).unwrap_or_default();
 
         let mut table_names: Vec<String> = rows.iter().map(|row| row.get(0)).collect();

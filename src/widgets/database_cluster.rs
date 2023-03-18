@@ -136,7 +136,9 @@ impl DatabaseCluster {
         }
     }
 
-    pub fn toggle_select_focused_element(&mut self) {
+    pub fn toggle_focused_database(&mut self) {
+        self.current_selected_table = None;
+        self.current_focused_table = None;
         match self.current_focused_database {
             Some(focused_db_index) => {
                 match self.current_connected_database {
@@ -166,6 +168,24 @@ impl DatabaseCluster {
                 };
             }
             None => (),
+        }
+    }
+
+    pub fn select_focused_table(&mut self) -> Option<&mut DatabaseTable> {
+        match self.current_connected_database {
+            Some(current_db_index) => {
+                let current_database = &mut self.databases[current_db_index];
+    
+                match self.current_focused_table {
+                    Some(current_table_index) => {
+                        let current_table = &mut current_database.tables[current_table_index];
+                        self.current_selected_table = Some(current_table_index);
+                        Some(current_table)
+                    },
+                    None => None,
+                }
+            },
+            None => None,
         }
     }
 
