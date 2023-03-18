@@ -162,7 +162,7 @@ impl App {
             }
         };
 
-        let current_database = &self.cluster.databases[current_connected_database];
+        let current_database = &mut self.cluster.databases[current_connected_database];
 
         let current_table_index = match self.cluster.current_focused_table {
             Some(current_table) => current_table,
@@ -173,15 +173,16 @@ impl App {
             }
         };
 
-        let current_table = &current_database.tables[current_table_index];
-
+        self.cluster.current_selected_table = Some(current_table_index);
+        let current_table = &mut current_database.tables[current_table_index];
         let table_data = self.connection_manager.get_table(current_table.name.clone());
 
         match table_data {
             Ok(column_names) => {
                 let names: Vec<String> = column_names.iter().map(|row| row.get(0)).collect();
-                self.show_debug_message(names.join(","));
-            },
+                current_table.set_columns(names.clone());
+
+           },
             Err(error) => self.show_debug_message(format!("Got an error: {}", error))
         }
     }

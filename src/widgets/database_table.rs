@@ -13,4 +13,8 @@ impl DatabaseTable {
             is_focused: false,
         }
     }
+
+    pub fn set_columns(&mut self, columns: Vec<String>) {
+        self.columns = columns;
+    }
 }

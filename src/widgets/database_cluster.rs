@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::database::Database;
+use super::{database::Database, database_table::DatabaseTable};
 
 pub enum TreeElement {
     Database,
@@ -166,6 +166,22 @@ impl DatabaseCluster {
                 };
             }
             None => (),
+        }
+    }
+
+    pub fn get_current_selected_table(&self) -> Option<DatabaseTable> {
+        match self.current_connected_database {
+            Some(current_db) => {
+                let current_database = &self.databases[current_db];
+                match self.current_selected_table {
+                    Some(current_table_index) => {
+                        let current_database = current_database.tables[current_table_index].clone();
+                        Some(current_database)
+                    },
+                    None => None
+                }
+            },
+            None => None
         }
     }
 }

@@ -3,7 +3,7 @@ use tui::{
     backend::Backend,
     layout::Rect,
     style::{Color, Style},
-    widgets::{Block, Borders},
+    widgets::{Block, Borders, Paragraph},
     Frame,
 };
 
@@ -19,6 +19,16 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
         .title(title)
         .borders(Borders::ALL)
         .style(default_style);
+
+    match app.cluster.get_current_selected_table() {
+        Some(current_table) => {
+            let column_names = current_table.columns.clone().join(",");
+            let names = Paragraph::new(column_names)
+                .block(Block::default().borders(Borders::ALL));
+            f.render_widget(names, area);
+        },
+        None => {}
+    };
 
     f.render_widget(block, area);
 }
