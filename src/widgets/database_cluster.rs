@@ -97,12 +97,14 @@ impl DatabaseCluster {
                             focused_table_index + 1
                         }
                     }
+                    // This panics when there are no tables in the database
                     None => 0,
                 };
 
                 self.current_focused_table = Some(next_table_index);
-                self.databases[current_connnected_database].tables[next_table_index].is_focused =
-                    true;
+                self.databases[current_connnected_database]
+                    .tables[next_table_index]
+                    .is_focused = true;
             }
             None => (),
         }
@@ -125,6 +127,7 @@ impl DatabaseCluster {
                             focused_table_index - 1
                         }
                     }
+                    // This panics when there are no tables in the database
                     None => 0,
                 };
 
@@ -139,6 +142,7 @@ impl DatabaseCluster {
     pub fn toggle_focused_database(&mut self) {
         self.current_selected_table = None;
         self.current_focused_table = None;
+
         match self.current_focused_database {
             Some(focused_db_index) => {
                 match self.current_connected_database {
@@ -175,16 +179,16 @@ impl DatabaseCluster {
         match self.current_connected_database {
             Some(current_db_index) => {
                 let current_database = &mut self.databases[current_db_index];
-    
+
                 match self.current_focused_table {
                     Some(current_table_index) => {
                         let current_table = &mut current_database.tables[current_table_index];
                         self.current_selected_table = Some(current_table_index);
                         Some(current_table)
-                    },
+                    }
                     None => None,
                 }
-            },
+            }
             None => None,
         }
     }
@@ -197,11 +201,11 @@ impl DatabaseCluster {
                     Some(current_table_index) => {
                         let current_database = current_database.tables[current_table_index].clone();
                         Some(current_database)
-                    },
-                    None => None
+                    }
+                    None => None,
                 }
-            },
-            None => None
+            }
+            None => None,
         }
     }
 }

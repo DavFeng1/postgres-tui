@@ -1,5 +1,5 @@
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
-use std::{io, fmt::Display};
+use std::{fmt::Display, io};
 
 use crate::{
     postgres::connection_manager::ConnectionManager,
@@ -19,7 +19,6 @@ pub struct PSQLConnectionOptions {
     pub user: String,
     pub dbname: Option<String>,
 }
-
 
 #[derive(PartialEq, Eq)]
 pub enum FocusElement {
@@ -56,7 +55,8 @@ impl App {
 
         let mut connection_manager = connection_manager_result.unwrap();
 
-        let mut databases: Vec<Database> = connection_manager.get_databases()
+        let mut databases: Vec<Database> = connection_manager
+            .get_databases()
             .into_iter()
             .map(|row| Database::new(row.get(0), Vec::new()))
             .collect();
@@ -155,19 +155,20 @@ impl App {
     fn open_table(&mut self) {
         match self.cluster.select_focused_table() {
             Some(current_table) => {
-                let table_data = self.connection_manager.get_table(current_table.name.clone());
+                let table_data = self
+                    .connection_manager
+                    .get_table(current_table.name.clone());
                 match table_data {
                     Ok(column_names) => {
-                        let names: Vec<String> = column_names.iter().map(|row| row.get(0)).collect();
+                        let names: Vec<String> =
+                            column_names.iter().map(|row| row.get(0)).collect();
                         current_table.set_columns(names.clone());
-
-                   },
-                    Err(error) => self.show_debug_message(format!("Got an error: {}", error))
+                    }
+                    Err(error) => self.show_debug_message(format!("Got an error: {}", error)),
                 }
-            },
-            None => ()
+            }
+            None => (),
         }
-
     }
 
     fn select_database(&mut self) {
@@ -190,7 +191,9 @@ impl App {
             dbname: Some(database_name.clone()),
         };
 
-        let create_connection_result = self.connection_manager.create_database_connection(connection_options_for_databse);
+        let create_connection_result = self
+            .connection_manager
+            .create_database_connection(connection_options_for_databse);
 
         self.handle_error_with_debug(create_connection_result);
         let result = self.connection_manager.get_tables_for_database();

@@ -7,7 +7,6 @@ pub struct ConnectionManager {
     connection_options: PSQLConnectionOptions,
 }
 
-
 impl ConnectionManager {
     pub fn new(connection_options: PSQLConnectionOptions) -> Result<ConnectionManager, Error> {
         let client_result = Client::connect(
@@ -20,15 +19,12 @@ impl ConnectionManager {
         );
 
         match client_result {
-            Ok(client) => Ok(
-                ConnectionManager {
-                    client,
-                    connection_options
-                }
-            ),
-            Err(err) =>  return Err(err)
+            Ok(client) => Ok(ConnectionManager {
+                client,
+                connection_options,
+            }),
+            Err(err) => return Err(err),
         }
-
     }
 
     pub fn get_databases(&mut self) -> Vec<Row> {
@@ -47,7 +43,10 @@ impl ConnectionManager {
         )
     }
 
-    pub fn create_database_connection(&mut self, connection_options: PSQLConnectionOptions) -> Result<(), Error> {
+    pub fn create_database_connection(
+        &mut self,
+        connection_options: PSQLConnectionOptions,
+    ) -> Result<(), Error> {
         let client_result = match &connection_options.dbname {
             Some(dbname) => Client::connect(
                 format!(
@@ -64,7 +63,7 @@ impl ConnectionManager {
                 )
                 .as_str(),
                 NoTls,
-            )
+            ),
         };
 
         match client_result {
@@ -72,13 +71,15 @@ impl ConnectionManager {
                 self.client = client;
                 self.connection_options = connection_options;
                 Ok(())
-            },
-            Err(err) => Err(err)
+            }
+            Err(err) => Err(err),
         }
     }
 
     pub fn get_table(&mut self, table_name: String) -> Result<Vec<Row>, Error> {
-        self.client.query("SELECT column_name FROM information_schema.columns where table_name = ($1)", &[&table_name])
+        self.client.query(
+            "SELECT column_name FROM information_schema.columns where table_name = ($1)",
+            &[&table_name],
+        )
     }
 }
-
