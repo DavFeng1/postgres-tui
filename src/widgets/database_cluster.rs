@@ -81,98 +81,91 @@ impl DatabaseCluster {
     }
 
     pub fn next_table(&mut self) {
-        match self.current_connected_database {
-            Some(current_connnected_database) => {
-                let next_table_index = match self.current_focused_table {
-                    Some(focused_table_index) => {
-                        self.databases[current_connnected_database].tables[focused_table_index]
-                            .is_focused = false;
+        let connected_database_index = match self.current_connected_database {
+            Some(connected_database_index) => connected_database_index,
+            None => return (),
+        };
 
-                        let number_of_tables =
-                            self.databases[current_connnected_database].tables.len();
+        let current_database = &mut self.databases[connected_database_index];
+        if current_database.tables.len() == 0 {
+            return ();
+        };
 
-                        if focused_table_index >= number_of_tables - 1 {
-                            0
-                        } else {
-                            focused_table_index + 1
-                        }
-                    }
-                    // This panics when there are no tables in the database
-                    None => 0,
-                };
+        let next_table_index = match self.current_focused_table {
+            Some(focused_table_index) => {
+                current_database.tables[focused_table_index].is_focused = false;
 
-                self.current_focused_table = Some(next_table_index);
-                self.databases[current_connnected_database]
-                    .tables[next_table_index]
-                    .is_focused = true;
+                let number_of_tables = current_database.tables.len();
+
+                if focused_table_index >= number_of_tables - 1 {
+                    0
+                } else {
+                    focused_table_index + 1
+                }
             }
-            None => (),
-        }
+            None => 0,
+        };
+
+        self.current_focused_table = Some(next_table_index);
+        current_database.tables[next_table_index].is_focused = true;
     }
 
     pub fn prev_table(&mut self) {
-        match self.current_connected_database {
-            Some(current_connnected_database) => {
-                let prev_table_index = match self.current_focused_table {
-                    Some(focused_table_index) => {
-                        self.databases[current_connnected_database].tables[focused_table_index]
-                            .is_focused = false;
+        let connected_database_index = match self.current_connected_database {
+            Some(connected_database_index) => connected_database_index,
+            None => return (),
+        };
 
-                        let number_of_tables =
-                            self.databases[current_connnected_database].tables.len();
+        let current_database = &mut self.databases[connected_database_index];
+        if current_database.tables.len() == 0 {
+            return ();
+        };
 
-                        if focused_table_index <= 0 {
-                            number_of_tables - 1
-                        } else {
-                            focused_table_index - 1
-                        }
-                    }
-                    // This panics when there are no tables in the database
-                    None => 0,
-                };
+        let prev_table_index = match self.current_focused_table {
+            Some(focused_table_index) => {
+                current_database.tables[focused_table_index].is_focused = false;
 
-                self.current_focused_table = Some(prev_table_index);
-                self.databases[current_connnected_database].tables[prev_table_index].is_focused =
-                    true;
+                let number_of_tables = current_database.tables.len();
+
+                if focused_table_index <= 0 {
+                    number_of_tables - 1
+                } else {
+                    focused_table_index - 1
+                }
             }
-            None => (),
-        }
+            // This panics when there are no tables in the database
+            None => 0,
+        };
+
+        self.current_focused_table = Some(prev_table_index);
+        current_database.tables[prev_table_index].is_focused = true;
     }
 
     pub fn toggle_focused_database(&mut self) {
         self.current_selected_table = None;
         self.current_focused_table = None;
 
-        match self.current_focused_database {
-            Some(focused_db_index) => {
-                match self.current_connected_database {
-                    Some(connected_db_index) => {
-                        if focused_db_index == connected_db_index {
-                            self.databases[connected_db_index].is_connected = false;
-                            self.current_connected_database = None
-                        } else {
-                            self.databases[connected_db_index].is_connected = false;
-                            self.databases[focused_db_index].is_connected = true;
-                            self.current_connected_database = Some(focused_db_index);
-                        };
+        let focused_database_index = match self.current_focused_database {
+            Some(focused_database_index) => focused_database_index,
+            None => return (),
+        };
 
-                        match self.current_focused_table {
-                            Some(current_focused_table) => {
-                                self.databases[connected_db_index].tables[current_focused_table]
-                                    .is_focused = false;
-                                self.current_focused_table = None;
-                            }
-                            None => (),
-                        }
-                    }
-                    None => {
-                        self.databases[focused_db_index].is_connected = true;
-                        self.current_connected_database = Some(focused_db_index);
-                    }
-                };
+        match self.current_connected_database {
+            Some(connected_database_index) => {
+                if focused_database_index == connected_database_index {
+                    self.databases[connected_database_index].is_connected = false;
+                    self.current_connected_database = None;
+                } else {
+                    self.databases[focused_database_index].is_connected = true;
+                    self.databases[connected_database_index].is_connected = false;
+                    self.current_connected_database = Some(focused_database_index);
+                }
             }
-            None => (),
-        }
+            None => {
+                self.databases[focused_database_index].is_connected = true;
+                self.current_connected_database = Some(focused_database_index);
+            }
+        };
     }
 
     pub fn select_focused_table(&mut self) -> Option<&mut DatabaseTable> {
