@@ -1,13 +1,12 @@
 use crate::app::{App, InputMode};
-use tui::{
-    backend::Backend,
+use ratatui::{
     layout::{Alignment, Rect},
     style::{Color, Style},
     widgets::{Block, Paragraph},
     Frame,
 };
 
-pub fn render<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+pub fn render(f: &mut Frame, app: &App, area: Rect) {
     let (title, color) = match app.input_mode {
         InputMode::Normal => (" Current mode: Normal", Color::Blue),
         InputMode::Editing => (" Current mode: Edit ", Color::Magenta),

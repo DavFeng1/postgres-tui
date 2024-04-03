@@ -1,13 +1,12 @@
 use crate::app::{App, FocusElement};
-use tui::{
-    backend::Backend,
+use ratatui::{
     layout::Rect,
     style::{Color, Style},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
 
-pub fn render<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+pub fn render(f: &mut Frame, app: &App, area: Rect) {
     let (render_color, title) = match app.focused_element {
         FocusElement::Main => (Color::Green, " Main View (focused) "),
         _ => (Color::Red, " Main View "),

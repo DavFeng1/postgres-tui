@@ -5,9 +5,7 @@ pub mod searchbar;
 pub mod sidebar;
 pub mod statusline;
 
-use std::io;
-use tui::{
-    backend::CrosstermBackend,
+use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
@@ -15,10 +13,10 @@ use tui::{
 use crate::app::App;
 
 pub trait Component {
-    fn render(&self, f: &mut Frame<CrosstermBackend<io::Stdout>>);
+    fn render(&self, f: &mut Frame);
 }
 
-pub fn draw(f: &mut Frame<CrosstermBackend<io::Stdout>>, app: &mut App) {
+pub fn draw(f: &mut Frame, app: &mut App) {
     let area = f.size();
 
     let horizontal_split = Layout::default()

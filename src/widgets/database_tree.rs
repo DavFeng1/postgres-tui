@@ -1,11 +1,11 @@
 use super::{database::Database, database_cluster::DatabaseCluster};
-use std::cmp::{max, min};
-use tui::{
+use ratatui::{
     buffer::Buffer,
     layout::Rect,
     style::{Color, Style},
     widgets::{Block, StatefulWidget, Widget},
 };
+use std::cmp::{max, min};
 
 pub struct DatabaseTree<'a> {
     block: Option<Block<'a>>,

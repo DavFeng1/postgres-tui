@@ -1,6 +1,4 @@
-use std::io::Stdout;
-use tui::{
-    backend::CrosstermBackend,
+use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style},
     widgets::{Block, Borders, Clear, Paragraph},
@@ -24,7 +22,7 @@ impl KeybindsPopup {
 }
 
 impl Component for KeybindsPopup {
-    fn render(&self, f: &mut Frame<CrosstermBackend<Stdout>>) {
+    fn render(&self, f: &mut Frame) {
         let size = f.size();
 
         let block = Block::default().borders(Borders::ALL).title("Keybinds");

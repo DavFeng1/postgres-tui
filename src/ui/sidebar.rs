@@ -2,15 +2,14 @@ use crate::{
     app::{App, FocusElement},
     widgets::database_tree::DatabaseTree,
 };
-use tui::{
-    backend::Backend,
+use ratatui::{
     layout::Rect,
     style::{Color, Style},
     widgets::{Block, Borders},
     Frame,
 };
 
-pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App, area: Rect) {
+pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     let database_name = match app.cluster.current_connected_database {
         Some(current_connected_database) => app.cluster.databases[current_connected_database]
             .name
