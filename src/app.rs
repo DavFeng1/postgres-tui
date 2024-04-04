@@ -153,18 +153,30 @@ impl App {
     }
 
     fn open_table(&mut self) {
-        match self.cluster.select_focused_table() {
-            Some(current_table) => {
-                let table_data = self
+        match self.cluster.select_focused_table().cloned() {
+            Some(mut current_table) => {
+                let columns = self
                     .connection_manager
                     .get_table(current_table.name.clone());
-                match table_data {
-                    Ok(column_names) => {
-                        let names: Vec<String> =
-                            column_names.iter().map(|row| row.get(0)).collect();
-                        current_table.set_columns(names.clone());
+
+                match columns {
+                    Ok(column_names_row) => {
+                        let column_names: Vec<String> =
+                            column_names_row.iter().map(|row| row.get(0)).collect();
+                        current_table.set_columns(column_names);
                     }
                     Err(error) => self.show_debug_message(format!("Got an error: {}", error)),
+                }
+
+                let data = self.connection_manager.get_data(&current_table.name);
+
+                match data {
+                    Ok(data) => {
+                        let data_as_text: Vec<String> = data.iter().map(|row| row.get(0)).collect();
+                        current_table.set_data(data_as_text)
+                    }
+
+                    Err(error) => self.show_debug_message(format!("Got an error: {error}")),
                 }
             }
             None => (),

@@ -192,12 +192,19 @@ impl DatabaseCluster {
                 let current_database = &self.databases[current_db];
                 match self.current_selected_table {
                     Some(current_table_index) => {
-                        let current_database = current_database.tables[current_table_index].clone();
-                        Some(current_database)
+                        let current_table = current_database.tables[current_table_index].clone();
+                        Some(current_table)
                     }
                     None => None,
                 }
             }
+            None => None,
+        }
+    }
+
+    pub fn get_current_data(&self) -> Option<Vec<String>> {
+        match self.get_current_selected_table() {
+            Some(current_table) => Some(current_table.data),
             None => None,
         }
     }

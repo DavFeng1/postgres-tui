@@ -3,6 +3,7 @@ pub struct DatabaseTable {
     pub name: String,
     pub columns: Vec<String>,
     pub is_focused: bool,
+    pub data: Vec<String>,
 }
 
 impl DatabaseTable {
@@ -11,10 +12,15 @@ impl DatabaseTable {
             name,
             columns,
             is_focused: false,
+            data: Vec::new(),
         }
     }
 
     pub fn set_columns(&mut self, columns: Vec<String>) {
         self.columns = columns;
+    }
+
+    pub fn set_data(&mut self, data: Vec<String>) {
+        self.data = data;
     }
 }

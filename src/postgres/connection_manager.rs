@@ -82,4 +82,11 @@ impl ConnectionManager {
             &[&table_name],
         )
     }
+
+    pub fn get_data(&mut self, table_name: &String) -> Result<Vec<Row>, Error> {
+        self.client.query(
+            format!("SELECT * FROM {table_name} LIMIT 10").as_str(),
+            &[&table_name],
+        )
+    }
 }

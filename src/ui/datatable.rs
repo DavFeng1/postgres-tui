@@ -28,5 +28,14 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
         None => {}
     };
 
+    match app.cluster.get_current_data() {
+        Some(current_data) => {
+            let names = Paragraph::new(current_data.join("\n"))
+                .block(Block::default().borders(Borders::ALL));
+            f.render_widget(names, area);
+        }
+        None => {}
+    };
+
     f.render_widget(block, area);
 }
