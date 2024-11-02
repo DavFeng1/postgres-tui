@@ -5,7 +5,7 @@ use postgres::{Client, Error, NoTls};
 pub fn main() -> Result<(), Error> {
     println!("testing postgres");
 
-    let user = "postgres";
+    let user = "feng";
     let host = "localhost";
 
     let mut client = Client::connect(format!("host={} user={}", host, user).as_str(), NoTls)?;

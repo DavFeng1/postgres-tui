@@ -1,5 +1,5 @@
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
-use std::{fmt::Display, io};
+use std::{env, fmt::Display, io};
 
 use crate::{
     postgres::connection_manager::ConnectionManager,
@@ -17,7 +17,7 @@ pub enum InputMode {
 pub struct PSQLConnectionOptions {
     pub host: String,
     pub user: String,
-    pub dbname: Option<String>,
+    pub db_name: String,
 }
 
 #[derive(PartialEq, Eq)]
@@ -45,10 +45,25 @@ pub struct App {
 
 impl App {
     pub fn new(title: String) -> App {
+        let user = match env::var("PGUSER") {
+            Ok(user) => user,
+            _ => String::from("postgres"),
+        };
+
+        let host = match env::var("PGHOST") {
+            Ok(host) => host,
+            _ => String::from("localhost"),
+        };
+
+        let db_name = match env::var("PGDATABASE") {
+            Ok(db_name) => db_name,
+            _ => String::from("postgres"),
+        };
+
         let default_connection_options = PSQLConnectionOptions {
-            user: String::from("dfeng"),
-            host: String::from("localhost"),
-            dbname: None,
+            user,
+            host,
+            db_name,
         };
 
         let connection_manager_result = ConnectionManager::new(default_connection_options);
@@ -199,8 +214,8 @@ impl App {
     fn update_connection(&mut self, database_name: &String) {
         let connection_options_for_databse = PSQLConnectionOptions {
             host: String::from("localhost"),
-            user: String::from("dfeng"),
-            dbname: Some(database_name.clone()),
+            user: String::from("postgres"),
+            db_name: database_name.clone(),
         };
 
         let create_connection_result = self

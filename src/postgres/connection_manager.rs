@@ -11,8 +11,8 @@ impl ConnectionManager {
     pub fn new(connection_options: PSQLConnectionOptions) -> Result<ConnectionManager, Error> {
         let client_result = Client::connect(
             format!(
-                "host={} user={}",
-                connection_options.host, connection_options.user,
+                "host={} user={} dbname={}",
+                connection_options.host, connection_options.user, connection_options.db_name,
             )
             .as_str(),
             NoTls,
@@ -47,24 +47,14 @@ impl ConnectionManager {
         &mut self,
         connection_options: PSQLConnectionOptions,
     ) -> Result<(), Error> {
-        let client_result = match &connection_options.dbname {
-            Some(dbname) => Client::connect(
-                format!(
-                    "host={} user={} dbname={}",
-                    &connection_options.host, &connection_options.user, dbname
-                )
-                .as_str(),
-                NoTls,
-            ),
-            None => Client::connect(
-                format!(
-                    "host={} user={}",
-                    &connection_options.host, &connection_options.user,
-                )
-                .as_str(),
-                NoTls,
-            ),
-        };
+        let client_result = Client::connect(
+            format!(
+                "host={} user={} dbname={}",
+                connection_options.host, connection_options.user, connection_options.db_name
+            )
+            .as_str(),
+            NoTls,
+        );
 
         match client_result {
             Ok(client) => {
