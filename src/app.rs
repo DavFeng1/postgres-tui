@@ -39,12 +39,14 @@ pub struct App {
     pub show_debug: bool,
     pub show_keybinds: bool,
     pub should_quit: bool,
-    pub title: String,
+    pub user: String,
+    pub db_name: String,
+    pub host: String,
     input_history: Vec<String>,
 }
 
 impl App {
-    pub fn new(title: String) -> App {
+    pub fn new() -> App {
         let user = match env::var("PGUSER") {
             Ok(user) => user,
             _ => String::from("postgres"),
@@ -60,10 +62,12 @@ impl App {
             _ => String::from("postgres"),
         };
 
+        println!("bong {} {} {}", db_name, host, user);
+
         let default_connection_options = PSQLConnectionOptions {
-            user,
-            host,
-            db_name,
+            user: user.clone(),
+            host: host.clone(),
+            db_name: db_name.clone(),
         };
 
         let connection_manager_result = ConnectionManager::new(default_connection_options);
@@ -89,7 +93,9 @@ impl App {
             should_quit: false,
             show_debug: false,
             show_keybinds: true,
-            title,
+            user,
+            db_name,
+            host,
         }
     }
 
@@ -170,9 +176,7 @@ impl App {
     fn open_table(&mut self) {
         match self.cluster.select_focused_table().cloned() {
             Some(mut current_table) => {
-                let columns = self
-                    .connection_manager
-                    .get_table(current_table.name.clone());
+                let columns = self.connection_manager.get_table(&current_table.name);
 
                 match columns {
                     Ok(column_names_row) => {
@@ -180,7 +184,7 @@ impl App {
                             column_names_row.iter().map(|row| row.get(0)).collect();
                         current_table.set_columns(column_names);
                     }
-                    Err(error) => self.show_debug_message(format!("Got an error: {}", error)),
+                    Err(error) => self.show_debug_message(format!("Error: {}", error)),
                 }
 
                 let data = self.connection_manager.get_data(&current_table.name);
@@ -193,6 +197,7 @@ impl App {
 
                     Err(error) => self.show_debug_message(format!("Got an error: {error}")),
                 }
+                // self.try_into
             }
             None => (),
         }
@@ -214,7 +219,7 @@ impl App {
     fn update_connection(&mut self, database_name: &String) {
         let connection_options_for_databse = PSQLConnectionOptions {
             host: String::from("localhost"),
-            user: String::from("postgres"),
+            user: self.user.clone(),
             db_name: database_name.clone(),
         };
 

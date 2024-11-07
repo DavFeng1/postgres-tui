@@ -22,6 +22,7 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
     match app.cluster.get_current_selected_table() {
         Some(current_table) => {
             let column_names = current_table.columns.clone().join(",");
+            println!("Column names: {}", column_names);
             let names = Paragraph::new(column_names).block(Block::default().borders(Borders::ALL));
             f.render_widget(names, area);
         }
@@ -32,6 +33,7 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
         Some(current_data) => {
             let names = Paragraph::new(current_data.join("\n"))
                 .block(Block::default().borders(Borders::ALL));
+            println!("Data: {:?}", current_data);
             f.render_widget(names, area);
         }
         None => {}

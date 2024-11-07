@@ -1,28 +1,12 @@
 ## Postgres Terminal UI
 
-Terminal UI for Postgres built using [tui-rs](https://github.com/fdehau/tui-rs).
-
+Terminal UI for Postgres built using [ratatui](https://ratatui.rs/).
 
 ## Quickstart
 
-Start by installing rust
-```
-curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh
-```
-
-Check that your install went ok
-```
-rustc --version
-```
-
-Update to the latest
-```
-rustup update
-```
-
 Clone the repo and run the app:
 ```
-git clone https://github.com/DavFeng1/PostgresTermUI.git
+git clone https://github.com/fenghourun/postgres-tui.git
 cd postgres-tui
 cargo run --bin postgres_tui
 ```

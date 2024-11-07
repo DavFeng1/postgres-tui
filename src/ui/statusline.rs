@@ -8,8 +8,20 @@ use ratatui::{
 
 pub fn render(f: &mut Frame, app: &App, area: Rect) {
     let (title, color) = match app.input_mode {
-        InputMode::Normal => (" Current mode: Normal", Color::Blue),
-        InputMode::Editing => (" Current mode: Edit ", Color::Magenta),
+        InputMode::Normal => (
+            format!(
+                " Current mode: Normal. User: {}. Database: {}. Host: {}.",
+                app.user, app.db_name, app.host
+            ),
+            Color::Blue,
+        ),
+        InputMode::Editing => (
+            format!(
+                " Current mode: Edit. User: {}. Database: {}. Host: {}.",
+                app.user, app.db_name, app.host
+            ),
+            Color::Magenta,
+        ),
     };
 
     let default_style = Style::default().fg(color);

@@ -23,7 +23,7 @@ impl ConnectionManager {
                 client,
                 connection_options,
             }),
-            Err(err) => return Err(err),
+            Err(err) => Err(err),
         }
     }
 
@@ -66,17 +66,17 @@ impl ConnectionManager {
         }
     }
 
-    pub fn get_table(&mut self, table_name: String) -> Result<Vec<Row>, Error> {
-        self.client.query(
+    pub fn get_table(&mut self, table_name: &String) -> Result<Vec<Row>, Error> {
+        let result = self.client.query(
             "SELECT column_name FROM information_schema.columns where table_name = ($1)",
             &[&table_name],
-        )
+        );
+
+        result
     }
 
     pub fn get_data(&mut self, table_name: &String) -> Result<Vec<Row>, Error> {
-        self.client.query(
-            format!("SELECT * FROM {table_name} LIMIT 10").as_str(),
-            &[&table_name],
-        )
+        self.client
+            .query(&format!("SELECT * FROM {} LIMIT 10", table_name), &[])
     }
 }

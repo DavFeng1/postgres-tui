@@ -21,6 +21,7 @@ impl DatabaseTable {
     }
 
     pub fn set_data(&mut self, data: Vec<String>) {
+        println!("Setting data: {:?}", data);
         self.data = data;
     }
 }

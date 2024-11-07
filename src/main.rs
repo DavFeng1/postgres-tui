@@ -29,12 +29,12 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    // create app and run it
-    let mut app = App::new(String::from("postgres tui"));
+    let mut app = App::new();
 
     let res = run_loop(&mut terminal, &mut app);
 
     if let Err(err) = res {
+        disable_raw_mode()?;
         println!("{:?}", err)
     }
 

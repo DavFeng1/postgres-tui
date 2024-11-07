@@ -24,5 +24,12 @@ pub fn main() -> Result<(), Error> {
         println!("found tables: {}", name);
     }
 
+    let result = client.query(&format!("SELECT * FROM {} LIMIT 10", "paper"), &[])?;
+
+    for row in result {
+        let name: String = row.get(0);
+        println!("found row: {}", name);
+    }
+
     Ok(())
 }
